@@ -114,13 +114,30 @@ def section(kicker,title,n,sub=""):
     footer(s)
 def content(title,items,kicker=None,size=20):
     s=head(slide(),title,kicker); bullets(s,Inches(0.85),Inches(1.95),Inches(11.6),Inches(4.9),items,size=size); footer(s); return s
-def two_col(title,left,right,kicker=None,lhead="",rhead=""):
+def two_col(title,left,right,kicker=None,lhead="",rhead="",source=None):
     s=head(slide(),title,kicker)
     rect(s,Inches(0.85),Inches(1.95),Inches(5.7),Inches(4.7),LIGHT); rect(s,Inches(6.95),Inches(1.95),Inches(5.55),Inches(4.7),LIGHT)
     if lhead: txt(s,Inches(1.1),Inches(2.15),Inches(5.2),Inches(0.4),[[(lhead,16,BLUE,True)]])
     if rhead: txt(s,Inches(7.2),Inches(2.15),Inches(5.0),Inches(0.4),[[(rhead,16,TEAL,True)]])
     bullets(s,Inches(1.1),Inches(2.7),Inches(5.2),Inches(3.8),left,size=16)
-    bullets(s,Inches(7.2),Inches(2.7),Inches(5.05),Inches(3.8),right,size=16,mcolor=TEAL); footer(s); return s
+    bullets(s,Inches(7.2),Inches(2.7),Inches(5.05),Inches(3.8),right,size=16,mcolor=TEAL)
+    _source_line(s,source)
+    footer(s); return s
+def process_v(title,items,kicker=None,color=BLUE,source=None):
+    """Vertical numbered process list: numbered circle + title + caption per row."""
+    s=head(slide(),title,kicker,kcolor=color)
+    n=len(items); X0=Inches(0.85); Y0=Inches(2.0); TOTW=Inches(11.63)
+    rowh=int((Inches(4.6)-Inches(0.2)*(n-1))/n); bd=min(Inches(0.7),int(rowh*0.75))
+    for i,(t,cap) in enumerate(items):
+        y=int(Y0+(rowh+Inches(0.2))*i)
+        rect(s,X0,y,TOTW,rowh,LIGHT); rect(s,X0,y,Inches(0.1),rowh,color)
+        cy=int(y+rowh/2-bd/2)
+        oval(s,X0+Inches(0.3),cy,bd,bd,color)
+        txt(s,X0+Inches(0.3),cy,bd,bd,[[(str(i+1),18,WHITE,True)]],align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE)
+        tx=X0+Inches(0.3)+bd+Inches(0.3); tw=TOTW-(bd+Inches(0.9))
+        txt(s,tx,y,tw,rowh,[[(t,16,INK,True)],[(cap,13,GREY,False)]],anchor=MSO_ANCHOR.MIDDLE,space=2)
+    _source_line(s,source)
+    footer(s); return s
 def cards3(title,cards,kicker):
     """Renders 2 or 3 evenly-spaced cards depending on how many are passed —
     never pads with an empty placeholder card."""
@@ -368,12 +385,19 @@ for t in C.TOPICS:
         else:
             tile_grid(f"What is {a['t_statement']}?", a["what_is_items"],
                        kicker=t_tag, cols=2, size=14, source=a["what_is_source"])
+        process_v(a["process_title"], a["process_items"], kicker=f"{t_tag} · HOW IT WORKS",
+                  source=a["process_source"])
+        two_col(a["compare_title"], a["compare_left"], a["compare_right"],
+                kicker=f"{t_tag} · COMPARE", lhead=a["compare_lhead"], rhead=a["compare_rhead"],
+                source=a["compare_source"])
         if a["visual_kind"]=="bar":
             stats_bar(a["visual_title"], a["visual_items"], kicker=f"{t_tag} · SUPPORTING DATA",
                        source=a["visual_source"])
         else:
-            tile_grid(a["visual_title"], a["visual_items"], kicker=f"{t_tag} · KEY TAKEAWAYS",
+            tile_grid(a["visual_title"], a["visual_items"], kicker=f"{t_tag} · SUPPORTING DATA",
                        cols=2, size=14, source=a["visual_source"])
+        tile_grid(a["takeaways_title"], a["takeaways_items"], kicker=f"{t_tag} · KEY TAKEAWAYS",
+                   cols=2, size=14, source=a["takeaways_source"], icons=["✓","✓","✓","✓"])
         activity_overview(f"ACTIVITY {a['num']}", a["title"], a["desc"], a["build"], a["duration"], kicker=f"{t_tag} · ACTIVITY")
         SLIDE_MAP[f"activity{a['num']}"]=PAGE["n"]
         steps=a["steps"]; total=len(steps)
