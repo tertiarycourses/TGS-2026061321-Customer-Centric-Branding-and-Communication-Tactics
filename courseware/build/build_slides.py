@@ -78,7 +78,8 @@ def footer(s):
 def head(s,title,kicker=None,kcolor=BLUE):
     rect(s,0,0,SW,SH,WHITE); rect(s,0,0,Inches(0.28),Inches(1.55),kcolor)
     if kicker: txt(s,Inches(0.85),Inches(0.5),Inches(11.6),Inches(0.4),[[(kicker,14,kcolor,True)]])
-    txt(s,Inches(0.85),Inches(0.9),Inches(11.9),Inches(0.9),[[(title,29,INK,True)]])
+    size=29 if len(title)<=45 else (23 if len(title)<=75 else 19)
+    txt(s,Inches(0.85),Inches(0.9),Inches(11.9),Inches(0.9),[[(title,size,INK,True)]])
     rect(s,Inches(0.85),Inches(1.7),Inches(11.63),Inches(0.02),LINE)
     return s
 def _logo(name):
@@ -140,11 +141,14 @@ def big_statement(line1,line2,kicker,color=BLUE):
     if line2: txt(s,Inches(1.12),Inches(4.9),Inches(11),Inches(1.2),[[(line2,20,GREY,False)]])
     footer(s); return s
 PALETTE=[BLUE,TEAL,VIOLET,AMBER]
-def tile_grid(title,items,kicker=None,cols=2,size=15,icons=None,accent=BLUE):
+def _source_line(s,text):
+    if text:
+        txt(s,Inches(0.85),Inches(6.85),Inches(11.6),Inches(0.3),[[(text,10,GREY,False)]])
+def tile_grid(title,items,kicker=None,cols=2,size=15,icons=None,accent=BLUE,source=None):
     """Grid of light panels, each with a coloured icon/number badge + text."""
     s=head(slide(),title,kicker,kcolor=accent)
     n=len(items); rows=math.ceil(n/cols)
-    X0=Inches(0.85); Y0=Inches(1.95); TOTW=Inches(11.63); AREAH=Inches(4.78)
+    X0=Inches(0.85); Y0=Inches(1.95); TOTW=Inches(11.63); AREAH=Inches(4.6 if source else 4.78)
     gx=Inches(0.3); gy=Inches(0.26)
     cw=int((TOTW-gx*(cols-1))/cols); ch=int((AREAH-gy*(rows-1))/rows)
     bd=Inches(0.6)
@@ -161,8 +165,9 @@ def tile_grid(title,items,kicker=None,cols=2,size=15,icons=None,accent=BLUE):
                 [[(it[0],size+2,INK,True)],[(it[1],size-2,GREY,False)]],anchor=MSO_ANCHOR.MIDDLE,space=3)
         else:
             txt(s,tx,int(y+Inches(0.1)),tw,int(ch-Inches(0.16)),[[(it,size,INK,False)]],anchor=MSO_ANCHOR.MIDDLE)
+    _source_line(s,source)
     footer(s); return s
-def flow_h(title,steps,kicker=None,color=BLUE):
+def flow_h(title,steps,kicker=None,color=BLUE,source=None):
     """Horizontal numbered flow: coloured chips connected by chevrons."""
     s=head(slide(),title,kicker,kcolor=color)
     n=len(steps); X0=Inches(0.85); TOTW=Inches(11.63); gap=Inches(0.34)
@@ -176,6 +181,35 @@ def flow_h(title,steps,kicker=None,color=BLUE):
         if i<n-1:
             txt(s,int(x+cw-Inches(0.04)),int(y+ch/2-Inches(0.3)),int(gap+Inches(0.08)),Inches(0.6),
                 [[("▶",15,color,True)]],align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE)
+    _source_line(s,source)
+    footer(s); return s
+def sub_divider(kicker,title):
+    """Full-bleed navy divider for a K/A sub-topic (T1, T2, ...) within a Learning Unit."""
+    s=slide(); NAVY=RGBColor(0x16,0x2A,0x4D)
+    rect(s,0,0,SW,SH,NAVY); rect(s,0,0,SW,Inches(0.14),TEAL); rect(s,0,Inches(7.36),SW,Inches(0.14),TEAL)
+    size=32 if len(title)<=50 else (25 if len(title)<=80 else 21)
+    txt(s,Inches(1.0),Inches(2.7),Inches(11.3),Inches(2.2),[[(title,size,WHITE,True)]],anchor=MSO_ANCHOR.MIDDLE)
+    txt(s,Inches(1.0),Inches(2.15),Inches(11.3),Inches(0.5),[[(kicker,15,TEAL,True)]])
+    PAGE["n"]+=1
+    txt(s,Inches(0.4),Inches(7.05),Inches(11.6),Inches(0.28),
+        [[(f"{C.SHORT_TITLE}  ·  {C.COURSE_CODE}  ·  page {PAGE['n']}",9,RGBColor(0xB8,0xC2,0xD6),False)]])
+    return s
+def stats_bar(title,items,kicker=None,color=BLUE,source=None,unit="%"):
+    """Horizontal bar-chart panel: label + proportional bar + value."""
+    s=head(slide(),title,kicker,kcolor=color)
+    n=len(items); X0=Inches(0.85); Y0=Inches(2.15); TOTW=Inches(11.63)
+    rowh=Inches(0.85); gap=Inches(0.18)
+    maxv=max(v for _,v in items) or 1
+    labelw=Inches(3.0); barx=X0+labelw+Inches(0.2); barw_max=TOTW-labelw-Inches(1.5)
+    for i,(label,val) in enumerate(items):
+        y=int(Y0+(rowh+gap)*i); col=PALETTE[i%len(PALETTE)]
+        txt(s,X0,y,labelw-Inches(0.1),rowh,[[(label,15,INK,True)]],anchor=MSO_ANCHOR.MIDDLE)
+        rect(s,barx,int(y+rowh*0.28),int(barw_max),int(rowh*0.44),LIGHT)
+        bw=max(int(barw_max*(val/maxv)),Inches(0.15))
+        rect(s,barx,int(y+rowh*0.28),bw,int(rowh*0.44),col)
+        txt(s,int(barx+bw+Inches(0.15)),y,Inches(1.2),rowh,
+            [[(f"{val:g}{unit}",15,col,True)]],anchor=MSO_ANCHOR.MIDDLE)
+    _source_line(s,source)
     footer(s); return s
 def trainer_slide(kicker,name,role,rows,initials,accent=BLUE):
     """Profile-card layout: avatar badge + name/role panel on the left, labelled
@@ -309,13 +343,15 @@ content("Courseware & Assessment on the LMS",[
  "Download the slides and Learner Guide for reference during the open-book assessment."],kicker="COURSE PORTAL")
 
 # ---------------- TOPICS + ACTIVITIES ----------------
+# Each Learning Unit (LU) = one Learning Outcome (LO) = several K/A sub-topics (T1, T2, ...).
+# Every sub-topic gets: a divider, a "What is X?" concept slide, one supporting data visual,
+# THEN the matching in-class activity (overview -> steps -> debrief). Theory always precedes
+# practice — never jump straight from the LU divider into an activity.
 TOPIC_ACTS = {t["num"]: [a for a in ACTIVITIES if a["topic"]==t["num"]] for t in C.TOPICS}
 CARD_COLORS=[BLUE,TEAL,VIOLET]
 for t in C.TOPICS:
     section(f"{t['code']}", t["title"], t["code"], t["subtitle"])
     SLIDE_MAP[f"topic{t['num']}_section"]=PAGE["n"]
-    tile_grid(f"Key Concepts — {t['title']}", t["concepts"],
-              kicker=f"{t['code']} · KEY CONCEPTS", cols=2, size=14)
     acts=TOPIC_ACTS[t["num"]]
     ngroups=2 if len(acts)<=4 else 3
     size=math.ceil(len(acts)/ngroups)
@@ -323,8 +359,22 @@ for t in C.TOPICS:
     cards=[(CARD_COLORS[gi], f"Activities {g[0]['num']}–{g[-1]['num']}", [a["title"] for a in g])
            for gi,g in enumerate(groups)]
     cards3(f"In-Class Activities — {t['title']}", cards, kicker="WHAT YOU'LL DO")
-    for a in acts:
-        activity_overview(f"ACTIVITY {a['num']}", a["title"], a["desc"], a["build"], a["duration"], kicker=f"{t['code']} · ACTIVITY")
+    for ti,a in enumerate(acts,1):
+        t_tag=f"LO{t['num']} · {t['code']} · T{ti}"
+        sub_divider(t_tag, a["t_statement"])
+        if a["what_is_kind"]=="flow":
+            flow_h(f"What is {a['t_statement']}?", a["what_is_items"],
+                   kicker=t_tag, source=a["what_is_source"])
+        else:
+            tile_grid(f"What is {a['t_statement']}?", a["what_is_items"],
+                       kicker=t_tag, cols=2, size=14, source=a["what_is_source"])
+        if a["visual_kind"]=="bar":
+            stats_bar(a["visual_title"], a["visual_items"], kicker=f"{t_tag} · SUPPORTING DATA",
+                       source=a["visual_source"])
+        else:
+            tile_grid(a["visual_title"], a["visual_items"], kicker=f"{t_tag} · KEY TAKEAWAYS",
+                       cols=2, size=14, source=a["visual_source"])
+        activity_overview(f"ACTIVITY {a['num']}", a["title"], a["desc"], a["build"], a["duration"], kicker=f"{t_tag} · ACTIVITY")
         SLIDE_MAP[f"activity{a['num']}"]=PAGE["n"]
         steps=a["steps"]; total=len(steps)
         for i,(instr,cmd) in enumerate(steps,1):
