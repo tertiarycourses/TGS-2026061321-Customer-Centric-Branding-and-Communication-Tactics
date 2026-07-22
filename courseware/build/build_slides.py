@@ -103,6 +103,7 @@ def cover():
          [("Conducted by Tertiary Infotech Academy Pte Ltd  ·  UEN 201200696W",14,GREY,False)]],space=6)
     txt(s,Inches(0.9),Inches(6.5),Inches(12),Inches(0.4),[[(f"Version {C.VERSION}  ·  {C.VERSION_DATE}",12,GREY,False)]])
     txt(s,Inches(0.9),Inches(6.85),Inches(12),Inches(0.34),[[("© 2026 Tertiary Infotech Academy Pte Ltd. All rights reserved.  ·  www.tertiarycourses.com.sg",10,GREY,False)]])
+    PAGE["n"]+=1  # cover has no visible footer, but still counts as page 1
 
 def section(kicker,title,n,sub=""):
     s=slide(); rect(s,0,0,SW,SH,WHITE); rect(s,0,0,Inches(0.28),SH,BLUE)
@@ -211,6 +212,26 @@ def sub_divider(kicker,title):
     txt(s,Inches(0.4),Inches(7.05),Inches(11.6),Inches(0.28),
         [[(f"{C.SHORT_TITLE}  ·  {C.COURSE_CODE}  ·  page {PAGE['n']}",9,RGBColor(0xB8,0xC2,0xD6),False)]])
     return s
+def table_slide(title,headers,rows,kicker=None,color=BLUE,source=None,col_weights=(0.24,0.36,0.40)):
+    """3-column reference table: header row (coloured fill) + N data rows
+    (alternating light/white fill), each row (label, meaning, example)."""
+    s=head(slide(),title,kicker,kcolor=color)
+    X0=Inches(0.85); Y0=Inches(1.95); TOTW=Inches(11.63)
+    cw=[int(TOTW*w) for w in col_weights]
+    cx=[X0, X0+cw[0], X0+cw[0]+cw[1]]
+    hh=Inches(0.55); n=len(rows); rh=int((Inches(4.55)-hh)/n)
+    for i,htext in enumerate(headers):
+        rect(s,cx[i],Y0,cw[i],hh,color)
+        txt(s,cx[i]+Inches(0.12),Y0,cw[i]-Inches(0.2),hh,[[(htext,13,WHITE,True)]],anchor=MSO_ANCHOR.MIDDLE)
+    for ri,row in enumerate(rows):
+        y=int(Y0+hh+rh*ri); fill=WHITE if ri%2 else LIGHT
+        for ci,val in enumerate(row):
+            rect(s,cx[ci],y,cw[ci],rh,fill,line=RGBColor(0xE8,0xEC,0xF2))
+            bold=(ci==0)
+            txt(s,cx[ci]+Inches(0.12),y,cw[ci]-Inches(0.2),rh,
+                [[(val,12.5,INK if not bold else color,bold)]],anchor=MSO_ANCHOR.MIDDLE)
+    _source_line(s,source)
+    footer(s); return s
 def stats_bar(title,items,kicker=None,color=BLUE,source=None,unit="%"):
     """Horizontal bar-chart panel: label + proportional bar + value."""
     s=head(slide(),title,kicker,kcolor=color)
@@ -390,12 +411,15 @@ for t in C.TOPICS:
         two_col(a["compare_title"], a["compare_left"], a["compare_right"],
                 kicker=f"{t_tag} · COMPARE", lhead=a["compare_lhead"], rhead=a["compare_rhead"],
                 source=a["compare_source"])
+        table_slide(a["table_title"], ["Element","What It Means","Example / Application"],
+                    a["table_rows"], kicker=f"{t_tag} · REFERENCE TABLE", source=a["table_source"])
         if a["visual_kind"]=="bar":
             stats_bar(a["visual_title"], a["visual_items"], kicker=f"{t_tag} · SUPPORTING DATA",
                        source=a["visual_source"])
         else:
             tile_grid(a["visual_title"], a["visual_items"], kicker=f"{t_tag} · SUPPORTING DATA",
                        cols=2, size=14, source=a["visual_source"])
+        big_statement(a["big_line1"], a["big_line2"], kicker=f"{t_tag} · WHY IT MATTERS")
         tile_grid(a["takeaways_title"], a["takeaways_items"], kicker=f"{t_tag} · KEY TAKEAWAYS",
                    cols=2, size=14, source=a["takeaways_source"], icons=["✓","✓","✓","✓"])
         activity_overview(f"ACTIVITY {a['num']}", a["title"], a["desc"], a["build"], a["duration"], kicker=f"{t_tag} · ACTIVITY")
