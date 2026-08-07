@@ -1,6 +1,6 @@
 ---
 name: tertiary-course-slides
-description: Generate a highly professional, all-white-theme WSQ course slide deck (python-pptx) for Tertiary Infotech Academy. Produces a cover page with course title + n8n & Tertiary logos + UEN, admin slides (digital attendance/TRAQOM, About the Trainer, Ground Rules, Lesson Plan, Learning Outcomes, Assessment), n8n key-concept slides, per-activity overview + workflow screenshot + step-by-step slides, and lunch/tea-break dividers. Use when creating or updating course/training slides for a Tertiary Infotech WSQ course.
+description: Generate a highly professional, all-white-theme WSQ course slide deck (python-pptx) for Tertiary Infotech Academy. Produces a cover page with course title + logos + UEN, admin slides (digital attendance/TRAQOM, About the Trainer, Ground Rules, Lesson Plan, Learning Outcomes, Assessment), rich key-concept slides (comparison tables, stat tiles, flows, playbooks, imported reference visuals), ONE workflow slide per activity (scenario + numbered workflow strip + deliverable band — never one-step-per-slide runs), and lunch/tea-break dividers. Use when creating or updating course/training slides for a Tertiary Infotech WSQ course.
 ---
 
 # WSQ Course Slides
@@ -19,7 +19,7 @@ Generate a professional 3-day course deck with `python-pptx`. Template: `make_sl
 - **Section dividers**: white background, big faint number, blue kicker + ink title (never a full dark fill).
 - **Admin front matter**: Digital Attendance (Mandatory / TRAQOM — SSG QR), About the Trainer, Let's Know Each Other, Ground Rules, LMS/TMS, Lesson Plan, Learning Outcomes, Assessment (Written SAQ 1h + Practical PP 1h, open book), Briefing for Assessment.
 - **n8n key concepts**: What is n8n, nodes, triggers & actions, execution modes, data/JSON/expressions, pin data, code/edit-fields, IF/Switch, split out, merge, sub-workflows; AI agents (LLM/memory/tools/system prompt); RAG (embeddings/vector store); API & HTTP request; webhooks & auth; security/guardrails.
-- **Per activity**: an overview slide (tag + description + "You'll build" + key nodes), a **workflow screenshot** slide, then **one step per slide** (big numbered badge), then a green "Test it" slide.
+- **Per activity**: exactly **ONE `activity_slide`** — ACTIVITY tag + scenario description + a compact numbered **workflow strip** (max 6 chips; longer activities show 5 steps plus a "+N more steps — see the Learner Guide" chip) + a "YOU'LL PRODUCE" deliverable band + duration. **Never** expand an activity into overview + one-step-per-slide + debrief runs; the full step-by-step lives in the Learner Guide. Embed real workflow screenshots via `img_slide` where they add value.
 - **Breaks**: white slides reading "Lunch Break / 1 hour" and "Tea Break / 15 minutes".
 - **Footer on every content slide**: course title · TGS code (left), `© 2026 Tertiary Infotech Academy Pte Ltd` (center), slide number (right).
 

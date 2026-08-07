@@ -20,12 +20,26 @@ build_learner_guide.py (or ./build_courseware.sh).
 TITLE        = "Customer-Centric Branding and Communication Tactics"
 SHORT_TITLE  = "Customer-Centric Branding and Communication Tactics"
 COURSE_CODE  = "TGS-2026061321"
-VERSION      = "v1"          # slide-deck version (part of the .pptx filename)
-DOC_VERSION  = "1.0"         # Lesson Plan / Learner Guide DOCX version (N.N)
-VERSION_DATE = "20 July 2026"
+VERSION      = "v3"          # slide-deck version (part of the .pptx filename)
+DOC_VERSION  = "1.2"         # Lesson Plan / Learner Guide DOCX version (N.N)
+VERSION_DATE = "7 August 2026"
 ORG          = "Tertiary Infotech Academy Pte Ltd"
 UEN          = "UEN: 201200696W"
-TRAINER      = "[Trainer Name]"          # placeholder — to be filled in by the assigned trainer
+TRAINER      = "Dr. Alfred Ang"
+
+# Document Version Control Record rows: (version, effective date, changes, author)
+VERSION_HISTORY = [
+    ("1.0", "20 July 2026", "First version.", ORG),
+    ("1.1", "7 August 2026",
+     "Slide deck redesigned: concept slides enriched from the Architecting Brand "
+     "Trust reference deck; per-activity step-by-step slides consolidated into "
+     "single activity workflow slides.", ORG),
+    ("1.2", "7 August 2026",
+     "QA fixes: Learner Guide step numbering restarts per activity; Day-1 schedule "
+     "rebalanced so Activities 3-4 fit their stated durations; admin slides "
+     "converted to card format; funnel-vs-journey slide redrawn as a comparison "
+     "table.", ORG),
+]
 DAYS         = 2
 
 TSC_TITLE   = "Brand Management"

@@ -31,7 +31,7 @@ prodoc.style_headings(doc)
 prodoc.add_cover_page(doc,"LEARNER GUIDE",C.TITLE,C.DOC_VERSION,
                       org_logo=os.path.join(ASSETS,"tertiary-infotech-logo.png"),
                       course_logo=None, course_code=C.COURSE_CODE)
-prodoc.add_version_control(doc,[(C.DOC_VERSION,C.VERSION_DATE,"First version.",C.ORG)])
+prodoc.add_version_control(doc,list(C.VERSION_HISTORY))
 prodoc.add_toc(doc)
 
 def h3(text,color=BRAND):
@@ -78,8 +78,12 @@ for t in C.TOPICS:
         h3("You'll produce")
         doc.add_paragraph(f"{a['build']}   (Duration: {a['duration']}.)")
         h3("Step-by-step")
+        # manual numbering so every activity restarts at step 1 (Word's
+        # List Number style would otherwise run 1..71 across all activities)
         for i,(instr,_cmd) in enumerate(a["steps"],1):
-            p=doc.add_paragraph(style="List Number"); p.add_run(instr)
+            p=doc.add_paragraph(); p.paragraph_format.left_indent=Pt(18)
+            r=p.add_run(f"{i}.  "); r.bold=True; r.font.color.rgb=BRAND
+            p.add_run(instr)
         h3("Debrief it")
         p=doc.add_paragraph(); r=p.add_run("Check: "); r.bold=True; r.font.color.rgb=BRAND
         p.add_run(a["test"]).font.size=Pt(10.5)

@@ -1,3 +1,23 @@
 __pycache__/
 *.pyc
 .DS_Store
+
+# WSQ assessment materials (confidential — never pushed)
+/assessment/
+/assessment\ /
+
+# Distribution archives (rebuildable — never pushed to GitHub)
+*.zip
+
+# Source material the project was derived from — not ours to republish.
+**/reference/
+**/Reference/
+/PPT References/
+!.claude/skills/**/reference/
+!.claude/skills/**/reference/**
+
+# Superseded courseware versions (kept locally only)
+/courseware/archive/
+
+# Office lock files
+~$*

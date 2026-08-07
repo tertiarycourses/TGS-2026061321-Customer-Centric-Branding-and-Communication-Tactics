@@ -4,7 +4,9 @@
 
 Design helpers are the shared wsq-slides visual component library (cover,
 section, content, two_col, cards3, tile_grid, flow_h, trainer_slide,
-big_statement, activity_overview, step_slide, test_slide, brk). Content is
+big_statement, lead, callout, compare_table, stat_band, playbook, img_slide,
+activity_slide — ONE workflow slide per activity, no step-by-step runs —
+lms_slide, brk). Content is
 driven entirely by course_data.py + data_domain1..4.py so the deck stays
 100% aligned with the Lesson Plan and Learner Guide. Also writes
 slide_map.json (topic/activity/admin-anchor -> page number) so the Lesson
@@ -23,6 +25,7 @@ from data_domain1 import DOMAIN1
 from data_domain2 import DOMAIN2
 from data_domain3 import DOMAIN3
 from data_domain4 import DOMAIN4
+from data_brandtrust import BRAND_TRUST
 ACTIVITIES = DOMAIN1 + DOMAIN2 + DOMAIN3 + DOMAIN4
 
 REPO = os.path.dirname(os.path.dirname(HERE))
@@ -78,8 +81,7 @@ def footer(s):
 def head(s,title,kicker=None,kcolor=BLUE):
     rect(s,0,0,SW,SH,WHITE); rect(s,0,0,Inches(0.28),Inches(1.55),kcolor)
     if kicker: txt(s,Inches(0.85),Inches(0.5),Inches(11.6),Inches(0.4),[[(kicker,14,kcolor,True)]])
-    size=29 if len(title)<=45 else (23 if len(title)<=75 else 19)
-    txt(s,Inches(0.85),Inches(0.9),Inches(11.9),Inches(0.9),[[(title,size,INK,True)]])
+    txt(s,Inches(0.85),Inches(0.9),Inches(11.9),Inches(0.9),[[(title,29,INK,True)]])
     rect(s,Inches(0.85),Inches(1.7),Inches(11.63),Inches(0.02),LINE)
     return s
 def _logo(name):
@@ -103,7 +105,6 @@ def cover():
          [("Conducted by Tertiary Infotech Academy Pte Ltd  ·  UEN 201200696W",14,GREY,False)]],space=6)
     txt(s,Inches(0.9),Inches(6.5),Inches(12),Inches(0.4),[[(f"Version {C.VERSION}  ·  {C.VERSION_DATE}",12,GREY,False)]])
     txt(s,Inches(0.9),Inches(6.85),Inches(12),Inches(0.34),[[("© 2026 Tertiary Infotech Academy Pte Ltd. All rights reserved.  ·  www.tertiarycourses.com.sg",10,GREY,False)]])
-    PAGE["n"]+=1  # cover has no visible footer, but still counts as page 1
 
 def section(kicker,title,n,sub=""):
     s=slide(); rect(s,0,0,SW,SH,WHITE); rect(s,0,0,Inches(0.28),SH,BLUE)
@@ -114,31 +115,18 @@ def section(kicker,title,n,sub=""):
     txt(s,Inches(10.0),Inches(0.7),Inches(2.8),Inches(1.6),[[(n,72,RGBColor(0xE2,0xE8,0xF0),True)]],align=PP_ALIGN.RIGHT)
     footer(s)
 def content(title,items,kicker=None,size=20):
-    s=head(slide(),title,kicker); bullets(s,Inches(0.85),Inches(1.95),Inches(11.6),Inches(4.9),items,size=size); footer(s); return s
-def two_col(title,left,right,kicker=None,lhead="",rhead="",source=None):
+    """House hard rule: content slides are card-format — numbered visual tiles,
+    never a plain bullet wall. (bullets() remains for two_col/cards3 panels.)"""
+    plain=[(it[0] if isinstance(it,tuple) else it) for it in items]
+    tsz=15 if max(len(x) for x in plain)<=140 else 13
+    return tile_grid(title,plain,kicker=kicker,cols=1,size=tsz)
+def two_col(title,left,right,kicker=None,lhead="",rhead=""):
     s=head(slide(),title,kicker)
     rect(s,Inches(0.85),Inches(1.95),Inches(5.7),Inches(4.7),LIGHT); rect(s,Inches(6.95),Inches(1.95),Inches(5.55),Inches(4.7),LIGHT)
     if lhead: txt(s,Inches(1.1),Inches(2.15),Inches(5.2),Inches(0.4),[[(lhead,16,BLUE,True)]])
     if rhead: txt(s,Inches(7.2),Inches(2.15),Inches(5.0),Inches(0.4),[[(rhead,16,TEAL,True)]])
     bullets(s,Inches(1.1),Inches(2.7),Inches(5.2),Inches(3.8),left,size=16)
-    bullets(s,Inches(7.2),Inches(2.7),Inches(5.05),Inches(3.8),right,size=16,mcolor=TEAL)
-    _source_line(s,source)
-    footer(s); return s
-def process_v(title,items,kicker=None,color=BLUE,source=None):
-    """Vertical numbered process list: numbered circle + title + caption per row."""
-    s=head(slide(),title,kicker,kcolor=color)
-    n=len(items); X0=Inches(0.85); Y0=Inches(2.0); TOTW=Inches(11.63)
-    rowh=int((Inches(4.6)-Inches(0.2)*(n-1))/n); bd=min(Inches(0.7),int(rowh*0.75))
-    for i,(t,cap) in enumerate(items):
-        y=int(Y0+(rowh+Inches(0.2))*i)
-        rect(s,X0,y,TOTW,rowh,LIGHT); rect(s,X0,y,Inches(0.1),rowh,color)
-        cy=int(y+rowh/2-bd/2)
-        oval(s,X0+Inches(0.3),cy,bd,bd,color)
-        txt(s,X0+Inches(0.3),cy,bd,bd,[[(str(i+1),18,WHITE,True)]],align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE)
-        tx=X0+Inches(0.3)+bd+Inches(0.3); tw=TOTW-(bd+Inches(0.9))
-        txt(s,tx,y,tw,rowh,[[(t,16,INK,True)],[(cap,13,GREY,False)]],anchor=MSO_ANCHOR.MIDDLE,space=2)
-    _source_line(s,source)
-    footer(s); return s
+    bullets(s,Inches(7.2),Inches(2.7),Inches(5.05),Inches(3.8),right,size=16,mcolor=TEAL); footer(s); return s
 def cards3(title,cards,kicker):
     """Renders 2 or 3 evenly-spaced cards depending on how many are passed —
     never pads with an empty placeholder card."""
@@ -159,14 +147,11 @@ def big_statement(line1,line2,kicker,color=BLUE):
     if line2: txt(s,Inches(1.12),Inches(4.9),Inches(11),Inches(1.2),[[(line2,20,GREY,False)]])
     footer(s); return s
 PALETTE=[BLUE,TEAL,VIOLET,AMBER]
-def _source_line(s,text):
-    if text:
-        txt(s,Inches(0.85),Inches(6.85),Inches(11.6),Inches(0.3),[[(text,10,GREY,False)]])
-def tile_grid(title,items,kicker=None,cols=2,size=15,icons=None,accent=BLUE,source=None):
+def tile_grid(title,items,kicker=None,cols=2,size=15,icons=None,accent=BLUE):
     """Grid of light panels, each with a coloured icon/number badge + text."""
     s=head(slide(),title,kicker,kcolor=accent)
     n=len(items); rows=math.ceil(n/cols)
-    X0=Inches(0.85); Y0=Inches(1.95); TOTW=Inches(11.63); AREAH=Inches(4.6 if source else 4.78)
+    X0=Inches(0.85); Y0=Inches(1.95); TOTW=Inches(11.63); AREAH=Inches(4.78)
     gx=Inches(0.3); gy=Inches(0.26)
     cw=int((TOTW-gx*(cols-1))/cols); ch=int((AREAH-gy*(rows-1))/rows)
     bd=Inches(0.6)
@@ -183,71 +168,147 @@ def tile_grid(title,items,kicker=None,cols=2,size=15,icons=None,accent=BLUE,sour
                 [[(it[0],size+2,INK,True)],[(it[1],size-2,GREY,False)]],anchor=MSO_ANCHOR.MIDDLE,space=3)
         else:
             txt(s,tx,int(y+Inches(0.1)),tw,int(ch-Inches(0.16)),[[(it,size,INK,False)]],anchor=MSO_ANCHOR.MIDDLE)
-    _source_line(s,source)
     footer(s); return s
-def flow_h(title,steps,kicker=None,color=BLUE,source=None):
-    """Horizontal numbered flow: coloured chips connected by chevrons."""
+def lead(s,text,y=1.82):
+    """Copilot-style one-line intro sentence under the title rule."""
+    txt(s,Inches(0.87),Inches(y),Inches(11.6),Inches(0.4),[[(text,13,GREY,False)]])
+def callout(s,text,y=5.95,h=0.85,color=BLUE,size=14):
+    """Full-width emphasis band with a coloured left accent."""
+    rect(s,Inches(0.85),Inches(y),Inches(11.63),Inches(h),LIGHT)
+    rect(s,Inches(0.85),Inches(y),Inches(0.1),Inches(h),color)
+    txt(s,Inches(1.2),Inches(y),Inches(11.0),Inches(h),[[(text,size,INK,True)]],anchor=MSO_ANCHOR.MIDDLE)
+def flow_h(title,steps,kicker=None,color=BLUE,note=None,intro=None):
+    """Horizontal numbered flow: coloured chips connected by chevrons.
+    Optional intro line under the title and note band under the chips."""
     s=head(slide(),title,kicker,kcolor=color)
+    if intro: lead(s,intro)
     n=len(steps); X0=Inches(0.85); TOTW=Inches(11.63); gap=Inches(0.34)
-    cw=int((TOTW-gap*(n-1))/n); y=Inches(2.55); ch=Inches(3.15); bd=Inches(0.82)
+    cw=int((TOTW-gap*(n-1))/n)
+    y=Inches(2.45) if note else Inches(2.55)
+    ch=Inches(3.0) if note else Inches(3.15); bd=Inches(0.82)
     for i,st in enumerate(steps):
         x=int(X0+(cw+gap)*i)
         rect(s,x,y,cw,ch,LIGHT); rect(s,x,y,cw,Inches(0.1),color)
-        oval(s,int(x+cw/2-bd/2),int(y+Inches(0.42)),bd,bd,color)
-        txt(s,int(x+cw/2-bd/2),int(y+Inches(0.42)),bd,bd,[[(str(i+1),30,WHITE,True)]],align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE)
-        txt(s,x+Inches(0.16),int(y+Inches(1.55)),cw-Inches(0.32),int(ch-Inches(1.7)),[[(st,14,INK,False)]],align=PP_ALIGN.CENTER)
+        oval(s,int(x+cw/2-bd/2),int(y+Inches(0.38)),bd,bd,color)
+        txt(s,int(x+cw/2-bd/2),int(y+Inches(0.38)),bd,bd,[[(str(i+1),30,WHITE,True)]],align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE)
+        txt(s,x+Inches(0.16),int(y+Inches(1.45)),cw-Inches(0.32),int(ch-Inches(1.6)),[[(st,13,INK,False)]],align=PP_ALIGN.CENTER)
         if i<n-1:
             txt(s,int(x+cw-Inches(0.04)),int(y+ch/2-Inches(0.3)),int(gap+Inches(0.08)),Inches(0.6),
                 [[("▶",15,color,True)]],align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE)
-    _source_line(s,source)
+    if note: callout(s,note,y=5.75,h=0.9,color=color)
     footer(s); return s
-def sub_divider(kicker,title):
-    """Full-bleed navy divider for a K/A sub-topic (T1, T2, ...) within a Learning Unit."""
-    s=slide(); NAVY=RGBColor(0x16,0x2A,0x4D)
-    rect(s,0,0,SW,SH,NAVY); rect(s,0,0,SW,Inches(0.14),TEAL); rect(s,0,Inches(7.36),SW,Inches(0.14),TEAL)
-    size=32 if len(title)<=50 else (25 if len(title)<=80 else 21)
-    txt(s,Inches(1.0),Inches(2.7),Inches(11.3),Inches(2.2),[[(title,size,WHITE,True)]],anchor=MSO_ANCHOR.MIDDLE)
-    txt(s,Inches(1.0),Inches(2.15),Inches(11.3),Inches(0.5),[[(kicker,15,TEAL,True)]])
-    PAGE["n"]+=1
-    txt(s,Inches(0.4),Inches(7.05),Inches(11.6),Inches(0.28),
-        [[(f"{C.SHORT_TITLE}  ·  {C.COURSE_CODE}  ·  page {PAGE['n']}",9,RGBColor(0xB8,0xC2,0xD6),False)]])
-    return s
-def table_slide(title,headers,rows,kicker=None,color=BLUE,source=None,col_weights=(0.24,0.36,0.40)):
-    """3-column reference table: header row (coloured fill) + N data rows
-    (alternating light/white fill), each row (label, meaning, example)."""
-    s=head(slide(),title,kicker,kcolor=color)
-    X0=Inches(0.85); Y0=Inches(1.95); TOTW=Inches(11.63)
-    cw=[int(TOTW*w) for w in col_weights]
-    cx=[X0, X0+cw[0], X0+cw[0]+cw[1]]
-    hh=Inches(0.55); n=len(rows); rh=int((Inches(4.55)-hh)/n)
-    for i,htext in enumerate(headers):
-        rect(s,cx[i],Y0,cw[i],hh,color)
-        txt(s,cx[i]+Inches(0.12),Y0,cw[i]-Inches(0.2),hh,[[(htext,13,WHITE,True)]],anchor=MSO_ANCHOR.MIDDLE)
-    for ri,row in enumerate(rows):
-        y=int(Y0+hh+rh*ri); fill=WHITE if ri%2 else LIGHT
-        for ci,val in enumerate(row):
-            rect(s,cx[ci],y,cw[ci],rh,fill,line=RGBColor(0xE8,0xEC,0xF2))
-            bold=(ci==0)
-            txt(s,cx[ci]+Inches(0.12),y,cw[ci]-Inches(0.2),rh,
-                [[(val,12.5,INK if not bold else color,bold)]],anchor=MSO_ANCHOR.MIDDLE)
-    _source_line(s,source)
+def compare_table(title,colheads,rows,kicker=None,intro=None):
+    """Two-column comparison table with coloured column headers
+    (imported design: reference-deck paradigm-shift table)."""
+    s=head(slide(),title,kicker)
+    if intro: lead(s,intro)
+    X0=Inches(0.85); LW=Inches(2.35); CW=Inches(4.64); Y0=Inches(2.3)
+    HH=Inches(0.5); n=len(rows); rh=int((Inches(6.7)-Y0-HH)/n)
+    heads=[(BLUE,colheads[0]),(TEAL,colheads[1])]
+    for ci,(col,txt_) in enumerate(heads):
+        x=int(X0+LW+CW*ci)
+        rect(s,x,Y0,CW,HH,col)
+        txt(s,x,Y0,CW,HH,[[(txt_,15,WHITE,True)]],align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE)
+    for ri,(label,a,b) in enumerate(rows):
+        y=int(Y0+HH+rh*ri); bg=LIGHT if ri%2==0 else WHITE
+        rect(s,X0,y,LW,rh,bg,line=LINE)
+        txt(s,X0+Inches(0.15),y,LW-Inches(0.3),rh,[[(label,14,INK,True)]],anchor=MSO_ANCHOR.MIDDLE)
+        for ci,cell in enumerate((a,b)):
+            x=int(X0+LW+CW*ci)
+            rect(s,x,y,CW,rh,bg,line=LINE)
+            txt(s,x+Inches(0.18),y,CW-Inches(0.36),rh,[[(cell,13,INK,False)]],anchor=MSO_ANCHOR.MIDDLE)
     footer(s); return s
-def stats_bar(title,items,kicker=None,color=BLUE,source=None,unit="%"):
-    """Horizontal bar-chart panel: label + proportional bar + value."""
-    s=head(slide(),title,kicker,kcolor=color)
-    n=len(items); X0=Inches(0.85); Y0=Inches(2.15); TOTW=Inches(11.63)
-    rowh=Inches(0.85); gap=Inches(0.18)
-    maxv=max(v for _,v in items) or 1
-    labelw=Inches(3.0); barx=X0+labelw+Inches(0.2); barw_max=TOTW-labelw-Inches(1.5)
-    for i,(label,val) in enumerate(items):
-        y=int(Y0+(rowh+gap)*i); col=PALETTE[i%len(PALETTE)]
-        txt(s,X0,y,labelw-Inches(0.1),rowh,[[(label,15,INK,True)]],anchor=MSO_ANCHOR.MIDDLE)
-        rect(s,barx,int(y+rowh*0.28),int(barw_max),int(rowh*0.44),LIGHT)
-        bw=max(int(barw_max*(val/maxv)),Inches(0.15))
-        rect(s,barx,int(y+rowh*0.28),bw,int(rowh*0.44),col)
-        txt(s,int(barx+bw+Inches(0.15)),y,Inches(1.2),rowh,
-            [[(f"{val:g}{unit}",15,col,True)]],anchor=MSO_ANCHOR.MIDDLE)
-    _source_line(s,source)
+def stat_band(title,stats,kicker=None,intro=None,note=None):
+    """Big-number stat tiles + optional emphasis band (imported design:
+    reference-deck economics/emotional-branding stat slides)."""
+    s=head(slide(),title,kicker)
+    if intro: lead(s,intro)
+    n=len(stats); X0=Inches(0.85); TOTW=Inches(11.63); gap=Inches(0.4)
+    cw=int((TOTW-gap*(n-1))/n); y=Inches(2.45); ch=Inches(3.1)
+    for i,(big,label) in enumerate(stats):
+        x=int(X0+(cw+gap)*i); col=PALETTE[i%len(PALETTE)]
+        rect(s,x,y,cw,ch,LIGHT); rect(s,x,y,cw,Inches(0.12),col)
+        txt(s,x,int(y+Inches(0.45)),cw,Inches(1.3),[[(big,52,col,True)]],align=PP_ALIGN.CENTER)
+        txt(s,x+Inches(0.25),int(y+Inches(1.85)),cw-Inches(0.5),Inches(1.1),[[(label,15,INK,False)]],align=PP_ALIGN.CENTER)
+    if note: callout(s,note,y=5.85,h=0.85,color=AMBER)
+    footer(s); return s
+def img_slide(title,path,kicker=None,intro=None):
+    """Full-width imported visual under the house header."""
+    s=head(slide(),title,kicker)
+    if intro: lead(s,intro)
+    p=os.path.join(ASSETS,path)
+    if os.path.exists(p):
+        ih=Inches(4.55); iw=int(ih*1376/768)
+        s.shapes.add_picture(p,int((SW-iw)/2),Inches(2.3),height=ih)
+    footer(s); return s
+def playbook(title,items,kicker=None,tagline=None):
+    """Numbered 01..0n columns with big faint numerals + tagline band
+    (imported design: reference-deck executive playbook)."""
+    s=head(slide(),title,kicker)
+    n=len(items); X0=Inches(0.85); TOTW=Inches(11.63); gap=Inches(0.34)
+    cw=int((TOTW-gap*(n-1))/n); y=Inches(2.0)
+    for i,(h,body) in enumerate(items):
+        x=int(X0+(cw+gap)*i); col=PALETTE[i%len(PALETTE)]
+        txt(s,x,y,cw,Inches(0.9),[[("0%d"%(i+1),44,RGBColor(0xD7,0xDF,0xEA),True)]])
+        txt(s,x,int(y+Inches(0.95)),cw,Inches(0.75),[[(h,16,col,True)]])
+        txt(s,x,int(y+Inches(1.72)),cw,Inches(1.9),[[(body,12,INK,False)]])
+    if tagline: callout(s,tagline,y=5.95,h=0.8,color=BLUE,size=16)
+    footer(s); return s
+def activity_slide(tag,title,desc,steps,build,duration,kicker):
+    """One-slide activity brief (replaces the old overview + one-step-per-slide
+    + debrief run): scenario, compact workflow strip, deliverable band."""
+    if len(steps)>6:
+        extra=len(steps)-5
+        steps=list(steps[:5])+[f"+{extra} more steps — see the Learner Guide / lab sheet"]
+    s=head(slide(),title,kicker,kcolor=TEAL)
+    rect(s,Inches(0.85),Inches(1.85),Inches(1.9),Inches(0.46),TEAL)
+    txt(s,Inches(0.85),Inches(1.85),Inches(1.9),Inches(0.46),[[(tag,14,WHITE,True)]],align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE)
+    txt(s,Inches(0.85),Inches(2.45),Inches(11.7),Inches(0.95),[[(desc,15,INK,False)]])
+    txt(s,Inches(0.85),Inches(3.42),Inches(6),Inches(0.32),[[("WORKFLOW",12,TEAL,True)]])
+    n=len(steps); X0=Inches(0.85); TOTW=Inches(11.63); gap=Inches(0.26)
+    cw=int((TOTW-gap*(n-1))/n); y=Inches(3.78); ch=Inches(1.78); bd=Inches(0.46)
+    for i,st in enumerate(steps):
+        x=int(X0+(cw+gap)*i)
+        rect(s,x,y,cw,ch,LIGHT); rect(s,x,y,cw,Inches(0.07),TEAL)
+        oval(s,int(x+cw/2-bd/2),int(y+Inches(0.16)),bd,bd,TEAL)
+        txt(s,int(x+cw/2-bd/2),int(y+Inches(0.16)),bd,bd,[[(str(i+1),16,WHITE,True)]],align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE)
+        txt(s,x+Inches(0.12),int(y+Inches(0.72)),cw-Inches(0.24),int(ch-Inches(0.82)),[[(st,11,INK,False)]],align=PP_ALIGN.CENTER)
+        if i<n-1:
+            txt(s,int(x+cw-Inches(0.05)),int(y+ch/2-Inches(0.25)),int(gap+Inches(0.1)),Inches(0.5),
+                [[("▶",11,TEAL,True)]],align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE)
+    by=Inches(5.75); bh=Inches(0.98)
+    rect(s,Inches(0.85),by,Inches(11.63),bh,LIGHT); rect(s,Inches(0.85),by,Inches(0.1),bh,TEAL)
+    txt(s,Inches(1.2),int(by+Inches(0.1)),Inches(8.6),Inches(0.3),[[("YOU'LL PRODUCE",11,TEAL,True)]])
+    txt(s,Inches(1.2),int(by+Inches(0.4)),Inches(8.6),Inches(0.55),[[(build,13,INK,True)]])
+    txt(s,Inches(9.9),by,Inches(2.35),bh,[[("Duration",11,GREY,True)],[(duration,14,INK,True)]],
+        align=PP_ALIGN.RIGHT,anchor=MSO_ANCHOR.MIDDLE,space=2)
+    footer(s); return s
+def lms_slide():
+    """Download Course Material — visual portal card + numbered steps
+    (never a bare text link)."""
+    s=head(slide(),"Courseware & Assessment on the LMS","COURSE PORTAL")
+    lead(s,"Everything for the open-book assessment — slides, Learner Guide and submissions — lives on the LMS.")
+    lx=Inches(0.85); lw=Inches(4.1); ly=Inches(2.35); lh=Inches(3.9)
+    rect(s,lx,ly,lw,lh,RGBColor(0x0F,0x2A,0x5F))
+    org=_logo("tertiary-infotech-logo.png")
+    if org: s.shapes.add_picture(org,int(lx+Inches(0.4)),int(ly+Inches(0.35)),height=Inches(0.55))
+    txt(s,lx,int(ly+Inches(1.15)),lw,Inches(0.5),[[("Tertiary Infotech Academy",18,WHITE,True)]],align=PP_ALIGN.CENTER)
+    txt(s,lx,int(ly+Inches(1.7)),lw,Inches(0.4),[[("LMS and TMS for SSG courses",12,RGBColor(0xB8,0xC7,0xE0),False)]],align=PP_ALIGN.CENTER)
+    rect(s,int(lx+Inches(1.05)),int(ly+Inches(2.35)),Inches(2.0),Inches(0.55),BLUE)
+    txt(s,int(lx+Inches(1.05)),int(ly+Inches(2.35)),Inches(2.0),Inches(0.55),[[("Sign in / OTP",14,WHITE,True)]],align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE)
+    txt(s,lx,int(ly+Inches(3.15)),lw,Inches(0.4),[[("lms-tms.tertiaryinfotech.com",12,RGBColor(0x9C,0xDC,0xFE),True)]],align=PP_ALIGN.CENTER)
+    items=[("Sign in","Log in with your registered email (OTP or password)."),
+           ("Download materials","Slides and the Learner Guide from the course page — your open-book references."),
+           ("Submit answers","Upload your Written Assessment and Case Study answers on the LMS."),
+           ("TRAQOM survey","Complete the TRAQOM survey via the QR code shown on the LMS.")]
+    rx=Inches(5.25); rw=Inches(7.23); gy=Inches(0.22); th=int((lh-gy*3)/4)
+    for i,(h,b) in enumerate(items):
+        y=int(ly+(th+gy)*i); col=PALETTE[i%len(PALETTE)]; bd=Inches(0.5)
+        rect(s,rx,y,rw,th,LIGHT); rect(s,rx,y,Inches(0.1),th,col)
+        oval(s,int(rx+Inches(0.25)),int(y+th/2-bd/2),bd,bd,col)
+        txt(s,int(rx+Inches(0.25)),int(y+th/2-bd/2),bd,bd,[[(str(i+1),15,WHITE,True)]],align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE)
+        txt(s,int(rx+Inches(0.95)),y,int(rw-Inches(1.15)),th,[[(h,14,INK,True)],[(b,11,GREY,False)]],anchor=MSO_ANCHOR.MIDDLE,space=2)
+    callout(s,"https://lms-tms.tertiaryinfotech.com/",y=6.42,h=0.5,color=TEAL,size=13)
     footer(s); return s
 def trainer_slide(kicker,name,role,rows,initials,accent=BLUE):
     """Profile-card layout: avatar badge + name/role panel on the left, labelled
@@ -317,10 +378,11 @@ trainer_slide("YOUR TRAINER · GENERAL","Your Trainer","General Trainer template
   ("Areas of expertise",""),("Training & industry experience",""),("Contact","")],
  initials="?",accent=GREY)
 trainer_slide("YOUR TRAINER",C.TRAINER,"Principal Trainer\nTertiary Infotech Academy Pte. Ltd.",
- [("Role",""),("Certification / Credentials",""),
-  ("Delivers","WSQ courses on customer-centric branding & communication."),
-  ("Contact","")],
- initials="?",accent=BLUE)
+ [("Role","Principal Trainer, Tertiary Infotech Academy Pte. Ltd."),
+  ("Certification / Credentials","20+ years of training and industry experience."),
+  ("Delivers","WSQ courses on customer-centric branding, marketing communications and business skills."),
+  ("Founder","Founder and lead instructor at Tertiary Infotech / Tertiary Courses.")],
+ initials="AA",accent=BLUE)
 content("Let's Know Each Other",[
  "Your name and organisation / role.",
  "Your experience with branding, marketing or communications (if any).",
@@ -375,21 +437,56 @@ flow_h("Assessment Flow",[
  "Sit WA (SAQ) then the Case Study — open book",
  "Submit your answers on the LMS",
  "Sign the Assessment Summary Record"],kicker="ON ASSESSMENT DAY")
-content("Courseware & Assessment on the LMS",[
- "Access your course materials, attendance and assessment on the LMS/TMS portal.",
- "Portal: https://lms-tms.tertiaryinfotech.com/",
- "Download the slides and Learner Guide for reference during the open-book assessment."],kicker="COURSE PORTAL")
+lms_slide()
 
 # ---------------- TOPICS + ACTIVITIES ----------------
-# Each Learning Unit (LU) = one Learning Outcome (LO) = several K/A sub-topics (T1, T2, ...).
-# Every sub-topic gets: a divider, a "What is X?" concept slide, one supporting data visual,
-# THEN the matching in-class activity (overview -> steps -> debrief). Theory always precedes
-# practice — never jump straight from the LU divider into an activity.
+COLOR_BY_NAME={"BLUE":BLUE,"TEAL":TEAL,"VIOLET":VIOLET,"AMBER":AMBER}
+def render_insight(kind,spec):
+    """Render one concept-enrichment slide imported from the reference deck
+    (data_brandtrust.py) using the shared component library."""
+    if kind=="pillars":
+        s=head(slide(),spec["title"],spec.get("kicker"))
+        if spec.get("intro"): lead(s,spec["intro"])
+        items=spec["items"]; cols=2; rows=math.ceil(len(items)/cols)
+        X0=Inches(0.85); Y0=Inches(2.25); TOTW=Inches(11.63); AREAH=Inches(4.45)
+        gx=Inches(0.3); gy=Inches(0.26)
+        cw=int((TOTW-gx*(cols-1))/cols); chh=int((AREAH-gy*(rows-1))/rows)
+        for i,(h,b) in enumerate(items):
+            r=i//cols; c=i%cols
+            x=int(X0+(cw+gx)*c); y=int(Y0+(chh+gy)*r); col=PALETTE[i%len(PALETTE)]
+            rect(s,x,y,cw,chh,LIGHT); rect(s,x,y,Inches(0.1),chh,col)
+            txt(s,x+Inches(0.3),int(y+Inches(0.18)),cw-Inches(0.55),Inches(0.4),[[(h,16,col,True)]])
+            txt(s,x+Inches(0.3),int(y+Inches(0.62)),cw-Inches(0.55),int(chh-Inches(0.75)),[[(b,12,INK,False)]])
+        footer(s)
+    elif kind=="table":
+        compare_table(spec["title"],spec["colheads"],spec["rows"],
+                      kicker=spec.get("kicker"),intro=spec.get("intro"))
+    elif kind=="stats":
+        stat_band(spec["title"],spec["stats"],kicker=spec.get("kicker"),
+                  intro=spec.get("intro"),note=spec.get("note"))
+    elif kind=="image":
+        img_slide(spec["title"],spec["path"],kicker=spec.get("kicker"),intro=spec.get("intro"))
+    elif kind=="quote":
+        big_statement(spec["line1"],spec["line2"],spec["kicker"],color=VIOLET)
+    elif kind=="flow":
+        flow_h(spec["title"],spec["steps"],kicker=spec.get("kicker"),
+               color=COLOR_BY_NAME.get(spec.get("color","BLUE"),BLUE),
+               note=spec.get("note"),intro=spec.get("intro"))
+    elif kind=="playbook":
+        playbook(spec["title"],spec["items"],kicker=spec.get("kicker"),tagline=spec.get("tagline"))
+    elif kind=="twocol":
+        two_col(spec["title"],spec["left"],spec["right"],kicker=spec.get("kicker"),
+                lhead=spec.get("lhead",""),rhead=spec.get("rhead",""))
+
 TOPIC_ACTS = {t["num"]: [a for a in ACTIVITIES if a["topic"]==t["num"]] for t in C.TOPICS}
 CARD_COLORS=[BLUE,TEAL,VIOLET]
 for t in C.TOPICS:
     section(f"{t['code']}", t["title"], t["code"], t["subtitle"])
     SLIDE_MAP[f"topic{t['num']}_section"]=PAGE["n"]
+    tile_grid(f"Key Concepts — {t['title']}", t["concepts"],
+              kicker=f"{t['code']} · KEY CONCEPTS", cols=2, size=14)
+    for kind,spec in BRAND_TRUST.get(t["num"],[]):
+        render_insight(kind,spec)
     acts=TOPIC_ACTS[t["num"]]
     ngroups=2 if len(acts)<=4 else 3
     size=math.ceil(len(acts)/ngroups)
@@ -397,37 +494,11 @@ for t in C.TOPICS:
     cards=[(CARD_COLORS[gi], f"Activities {g[0]['num']}–{g[-1]['num']}", [a["title"] for a in g])
            for gi,g in enumerate(groups)]
     cards3(f"In-Class Activities — {t['title']}", cards, kicker="WHAT YOU'LL DO")
-    for ti,a in enumerate(acts,1):
-        t_tag=f"LO{t['num']} · {t['code']} · T{ti}"
-        sub_divider(t_tag, a["t_statement"])
-        if a["what_is_kind"]=="flow":
-            flow_h(f"What is {a['t_statement']}?", a["what_is_items"],
-                   kicker=t_tag, source=a["what_is_source"])
-        else:
-            tile_grid(f"What is {a['t_statement']}?", a["what_is_items"],
-                       kicker=t_tag, cols=2, size=14, source=a["what_is_source"])
-        process_v(a["process_title"], a["process_items"], kicker=f"{t_tag} · HOW IT WORKS",
-                  source=a["process_source"])
-        two_col(a["compare_title"], a["compare_left"], a["compare_right"],
-                kicker=f"{t_tag} · COMPARE", lhead=a["compare_lhead"], rhead=a["compare_rhead"],
-                source=a["compare_source"])
-        table_slide(a["table_title"], ["Element","What It Means","Example / Application"],
-                    a["table_rows"], kicker=f"{t_tag} · REFERENCE TABLE", source=a["table_source"])
-        if a["visual_kind"]=="bar":
-            stats_bar(a["visual_title"], a["visual_items"], kicker=f"{t_tag} · SUPPORTING DATA",
-                       source=a["visual_source"])
-        else:
-            tile_grid(a["visual_title"], a["visual_items"], kicker=f"{t_tag} · SUPPORTING DATA",
-                       cols=2, size=14, source=a["visual_source"])
-        big_statement(a["big_line1"], a["big_line2"], kicker=f"{t_tag} · WHY IT MATTERS")
-        tile_grid(a["takeaways_title"], a["takeaways_items"], kicker=f"{t_tag} · KEY TAKEAWAYS",
-                   cols=2, size=14, source=a["takeaways_source"], icons=["✓","✓","✓","✓"])
-        activity_overview(f"ACTIVITY {a['num']}", a["title"], a["desc"], a["build"], a["duration"], kicker=f"{t_tag} · ACTIVITY")
+    for a in acts:
+        activity_slide(f"ACTIVITY {a['num']}", a["title"], a["desc"],
+                       [st for st,_cmd in a["steps"]],
+                       a["build"], a["duration"], kicker=f"{t['code']} · ACTIVITY {a['num']}")
         SLIDE_MAP[f"activity{a['num']}"]=PAGE["n"]
-        steps=a["steps"]; total=len(steps)
-        for i,(instr,cmd) in enumerate(steps,1):
-            step_slide(f"{t['code']} · ACTIVITY {a['num']}", a["title"], i, total, instr, cmd)
-        test_slide(a["title"], a["test"], kicker=f"ACTIVITY {a['num']} · DEBRIEF")
     recap_items=list({x["objective"]:x for x in acts}.values())[:6]
     tile_grid(f"Recap — {t['title']}",
               [(a["title"], f"You can now: {a['objective']}.") for a in recap_items],
@@ -461,6 +532,17 @@ content("Digital Attendance (Mandatory)",[
 SLIDE_MAP["digital_attendance_end"]=PAGE["n"]
 big_statement("Thank You!","You are now equipped to build customer-centric brand communication that earns trust and drives results.",
               "SEE YOU AT THE NEXT ONE",color=TEAL)
+
+# house rule: uniform fade transition on every slide (python-pptx has no API)
+from pptx.oxml.ns import qn
+def add_transitions(prs,kind="fade",speed="med"):
+    for sl in prs.slides:
+        el=sl._element
+        for tr in el.findall(qn("p:transition")): el.remove(tr)
+        tr=el.makeelement(qn("p:transition"),{"spd":speed})
+        tr.append(el.makeelement(qn(f"p:{kind}"),{}))
+        el.append(tr)
+add_transitions(prs)
 
 OUT=os.path.join(REPO,"courseware",f"{C.SHORT_TITLE}-{C.VERSION}.pptx")
 prs.save(OUT)

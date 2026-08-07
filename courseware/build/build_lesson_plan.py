@@ -43,12 +43,12 @@ SCHEDULE = {
     ("9:30","9:50",20,"admin","Welcome, course introduction, ground rules, Skills Framework overview and mandatory digital attendance (AM)",[]),
     ("9:50","11:30",100,"topic",f"LU1 — Stakeholders and Organisation: concepts, then {act_title(1)} & {act_title(2)}",["topic1_section","activity1","activity2"]),
     ("11:30","11:40",10,"break","Tea break",[]),
-    ("11:40","12:30",50,"activity",f"{act_title(3)} & {act_title(4)}; LU1 recap",["activity3","activity4"]),
-    ("12:30","1:30",60,"lunch","Lunch break",[]),
-    ("1:30","3:10",100,"topic",f"LU2 — Customer Influence: concepts, then {act_title(5)} & {act_title(6)}",["topic2_section","activity5","activity6"]),
-    ("3:10","3:20",10,"break","Tea break",[]),
-    ("3:20","4:40",80,"activity",f"{act_title(7)} & {act_title(8)}; LU2 recap",["activity7","activity8"]),
-    ("4:40","6:20",100,"topic",f"LU3 — Branding in Marketing (begins): concepts, then {act_title(9)} & {act_title(10)}",["topic3_section","activity9","activity10"]),
+    ("11:40","1:00",80,"activity",f"{act_title(3)} & {act_title(4)}; LU1 recap",["activity3","activity4"]),
+    ("1:00","2:00",60,"lunch","Lunch break",[]),
+    ("2:00","3:40",100,"topic",f"LU2 — Customer Influence: concepts, then {act_title(5)} & {act_title(6)}",["topic2_section","activity5","activity6"]),
+    ("3:40","3:50",10,"break","Tea break",[]),
+    ("3:50","5:10",80,"activity",f"{act_title(7)} & {act_title(8)}; LU2 recap",["activity7","activity8"]),
+    ("5:10","6:20",70,"topic",f"LU3 — Branding in Marketing (begins): concepts, then {act_title(9)} & {act_title(10)}",["topic3_section","activity9","activity10"]),
     ("6:20","6:30",10,"recap","Day 1 recap, Q&A and PM digital attendance",[]),
  ]),
  2: (C.DAY_THEMES[2], [
@@ -74,7 +74,7 @@ prodoc.style_headings(doc)
 prodoc.add_cover_page(doc,"LESSON PLAN",C.TITLE,C.DOC_VERSION,
                       org_logo=os.path.join(ASSETS,"tertiary-infotech-logo.png"),
                       course_logo=None, course_code=C.COURSE_CODE)
-prodoc.add_version_control(doc,[(C.DOC_VERSION,C.VERSION_DATE,"First version.",C.ORG)])
+prodoc.add_version_control(doc,list(C.VERSION_HISTORY))
 prodoc.add_toc(doc)
 
 def H(text,level=1):

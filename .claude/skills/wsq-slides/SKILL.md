@@ -28,8 +28,9 @@ not meet the WSQ house standard.
 
 1. **Slides must ALWAYS be visual — never a wall of bullet text.** Build each slide from
    the [Visual design system](#visual-design-system-mandatory) components (tile grids,
-   horizontal flow diagrams, colour-topped cards, profile cards, big statements,
-   activity/step/verify slides, section dividers). Any slide that would be 4+ bullets of
+   horizontal flow diagrams, colour-topped cards, comparison tables, stat bands,
+   playbooks, profile cards, big statements, activity workflow slides, section
+   dividers). Any slide that would be 4+ bullets of
    concept, outcome, process, comparison or trainer content **must** be converted to the
    matching component. Plain bullet lists are allowed **only** for genuinely list-like
    admin text (Learner Introduction, LMS instructions).
@@ -61,12 +62,27 @@ not meet the WSQ house standard.
    The deck MUST be built from the visual component helpers shipped in
    `reference/build_slides.py` — import/port **every** one of them into the course's
    `build_slides.py` and use the right component for each slide:
-   `cover`, `section`, `content`, `two_col`, `cards3`, `tile_grid`, `flow_h`,
-   `trainer_slide`, `big_statement`, `activity_overview`, `step_slide`, `test_slide` and
-   `brk` (break/lunch dividers). Do **not** lay out shapes ad hoc, and do **not** fall back
-   to a plain bullet slide where a diagram component fits. If the reference gains a new
-   diagram type, adopt it too. Verify before delivery that the deck actually *uses* each
-   component (e.g. `grep` the builder for every helper name).
+   `cover` (WSQ badge + Version), `section`, `content` (renders numbered tile cards —
+   never a bullet wall), `two_col`, `cards3` (auto-fits 2–3 cards), `tile_grid`,
+   `flow_h` (optional `intro`/`note`), `trainer_slide`, `big_statement`, `lead`,
+   `callout`, `compare_table`, `stat_band`, `playbook`, `img_slide`, `activity_slide`
+   (**ONE workflow slide per activity** — never one-step-per-slide runs), `lms_slide`
+   (visual LMS portal card) and `brk` (break/lunch dividers). Do **not** lay out shapes
+   ad hoc, and do **not** fall back to a plain bullet slide where a diagram component
+   fits. If the reference gains a new diagram type, adopt it too. Verify before delivery
+   that the deck actually *uses* each component (e.g. `grep` the builder for every
+   helper name).
+
+9. **One workflow slide per activity.** Each in-class activity is exactly ONE
+   `activity_slide`: ACTIVITY tag + scenario description + a compact numbered workflow
+   strip (max 6 chips — longer activities show 5 steps plus a "+N more steps — see the
+   Learner Guide" chip) + a "YOU'LL PRODUCE" deliverable band + duration. Never expand an
+   activity into overview + one-step-per-slide + debrief runs; the full step-by-step
+   lives in the Learner Guide.
+
+10. **The deck writes `slide_map.json`** (topic/activity/admin-anchor → deck page number)
+    so the Lesson Plan builder can cite the correct deck page for every teaching row —
+    keep the `SLIDE_MAP` anchors when adapting the builder.
 
 ## Reference implementation (use this to build PPT + LP + LG)
 
@@ -154,33 +170,53 @@ to this same reference.
 
 Decks must look **professional and visual — never a wall of bullet text**. Build slides
 from a small **component library** and reach for a component before a plain bullet list.
-Reference implementation: the AZ-104 course `courseware/build/build_slides.py` helpers
-(`tile_grid`, `flow_h`, `cards3`, `two_col`, `trainer_slide`, `big_statement`,
-`activity_overview`, `step_slide`, `test_slide`, `section`).
+Reference implementation: `reference/build_slides.py` (origin: the Customer-Centric
+Branding and Communication Tactics course, TGS-2026061321).
 
 **Required components** (use the right one for the content):
 - **Section dividers** — a full-height accent bar, kicker, big title, oversized ghost number.
+- **Content (tile-card format)** — `content()` itself renders a 1-column grid of numbered
+  tile cards; there is no plain-bullet content slide (`bullets()` survives only inside
+  `two_col`/`cards3` panels).
 - **Tile grid** — a 2-column grid of light panels, each with a coloured numbered/icon
   badge, a left accent stripe, and a bold lead title + caption. Use for **Key Concepts,
   Learning Outcomes / What You Achieved, overviews, Ground Rules** — anything that would
   otherwise be a 4–6 item bullet list.
-- **Horizontal flow diagram** — numbered chips joined by chevrons. Use for the
+- **Horizontal flow diagram** — numbered chips joined by chevrons, with an optional
+  `intro` line under the title and a `note` callout band under the chips. Use for the
   **Assessment Flow** and any step-by-step process.
-- **3-card layout** — three colour-topped cards (blue/teal/violet). Use for grouped
-  comparisons (e.g. lab groupings, options).
+- **Card layout** — `cards3` renders 2 or 3 colour-topped cards, evenly spaced to the
+  count passed (never pads with an empty placeholder card). Use for grouped comparisons
+  (e.g. activity groupings, options).
+- **Comparison table** — `compare_table`: label column + two coloured-header columns with
+  zebra rows. Use for paradigm shifts / A-vs-B contrasts.
+- **Stat band** — `stat_band`: big-number stat tiles + optional amber emphasis callout.
+  Use for economics / evidence beats.
+- **Playbook** — numbered 01..0n columns with big faint numerals + a tagline band. Use
+  for executive playbooks / "do these N things" beats.
+- **Lead & callout** — `lead()` one-line grey intro sentence under the title rule;
+  `callout()` full-width emphasis band with a coloured left accent.
+- **Image slide** — `img_slide`: a full-width imported visual (from `courseware/assets/`)
+  under the house header.
 - **Profile cards** — the About-the-Trainer layout (rule 3).
 - **Big statement** — one bold sentence + supporting line, for "why it matters" beats.
-- **Activity / Step / Verify** — coloured tag + description for each hands-on lab, a
-  numbered-circle step slide (with an optional dark code block), and a green "✅ Test it"
-  verify panel.
+- **Activity workflow slide** — `activity_slide`: ONE slide per activity with the
+  ACTIVITY tag, scenario, compact numbered workflow strip (≤6 chips), "YOU'LL PRODUCE"
+  deliverable band and duration. Replaces the old overview + one-step-per-slide +
+  debrief runs.
+- **LMS portal slide** — `lms_slide`: dark portal card (logo, sign-in button,
+  lms-tms.tertiaryinfotech.com) + numbered steps. Never a bare text link.
 
 **Rules of thumb**
 - Colours cycle through the house palette **blue → teal → violet → amber**; keep the
-  all-white background and the footer/kicker system.
-- A concept, outcomes, process or trainer slide must **not** be a plain `bullets`/`content`
-  slide — convert it to the matching component above.
-- Plain bullet slides are acceptable only for genuinely list-like admin content
-  (e.g. Learner Introduction, LMS instructions).
+  all-white background and the footer/kicker system; uniform fade transition on every
+  slide (`add_transitions`).
+- A concept, outcomes, process or trainer slide must **not** be a plain bullet slide —
+  convert it to the matching component above.
+- Enrich each topic beyond Key Concepts with insight slides (comparison tables, stat
+  bands, flows, playbooks, quotes, imported visuals) driven by a per-course
+  concept-enrichment data module (see `reference/data_brandtrust.py`) through a
+  `render_insight` dispatcher.
 - Always run visual QA: render the new/changed slides to images and inspect for overlap,
   clipping and balance before delivering.
 
@@ -198,7 +234,7 @@ Reference implementation: the AZ-104 course `courseware/build/build_slides.py` h
 10. Assessment & Funding
 11. Assessment Flow (horizontal flow diagram)
 12. Access the Hands-On Labs (clickable GitHub repo link — if labs are in a repo)
-13. … topic content + activities (each topic: section divider → Key Concepts tile grid → labs cards → activity/step/verify slides → recap) …
+13. … topic content + activities (each topic: section divider → Key Concepts tile grid → concept-enrichment insight slides → activities cards → ONE `activity_slide` per activity → recap tile grid) …
 14. Summary / What You Achieved (tile grid)
 15. Courseware & Assessment on the LMS (download courseware, take assessment)
 16. Practice Exam (if available)
@@ -229,7 +265,7 @@ Lesson Plan document) with its start and end time.
 
 ## Design notes
 
-- Build 16:9 (13.333 × 7.5 in). Either `python-pptx` (as the AZ-104 reference
+- Build 16:9 (13.333 × 7.5 in). Either `python-pptx` (as the reference
   `build_slides.py` does) or `pptxgenjs` is fine — reuse the **Visual design system**
   component helpers above rather than laying out shapes ad hoc. See the `pptx` and
   `tertiary-ppt-design` skills for mechanics.
