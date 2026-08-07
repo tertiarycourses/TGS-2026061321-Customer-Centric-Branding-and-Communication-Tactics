@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the AZ-104 Lesson Plan (LP) DOCX in the Tertiary house format.
+"""Generate the CompTIA PenTest+ (PT0-003) Lesson Plan (LP) DOCX in the Tertiary house format.
 
 Cover page + Document Version Control Record + auto TOC + Arial 11pt body +
 colour-coded 3-day schedule tables (9:00am-6:00pm, 8 training hours/day, 1h
@@ -20,7 +20,15 @@ from data_domain3 import DOMAIN3; from data_domain4 import DOMAIN4
 from data_domain5 import DOMAIN5
 ACT=DOMAIN1+DOMAIN2+DOMAIN3+DOMAIN4+DOMAIN5
 import prodoc
-REPO=os.path.dirname(os.path.dirname(HERE)); ASSETS=os.path.join(REPO,"courseware","assets")
+def _find_repo(start):
+    env=os.environ.get("COURSE_REPO")
+    if env and os.path.isdir(env): return env
+    d=start
+    for _ in range(8):
+        d=os.path.dirname(d)
+        if os.path.isdir(os.path.join(d,"courseware")) and os.path.isdir(os.path.join(d,"labs")): return d
+    return os.path.dirname(os.path.dirname(HERE))
+REPO=_find_repo(HERE); ASSETS=os.path.join(os.path.dirname(HERE),"assets")
 
 BRAND=RGBColor(0x1F,0x6F,0xEB); DARK=RGBColor(0x11,0x18,0x27); GREY=RGBColor(0x55,0x5B,0x66)
 HEADER_FILL="1F6FEB"; TOPIC_FILL="E8F0FE"; BREAK_FILL="FFF4E5"; LUNCH_FILL="FDE9D9"; ASSESS_FILL="E8F7EE"
@@ -31,39 +39,39 @@ def lab_titles(nums):
 # ------------------------------------------------ schedule (single source of truth for timing)
 # (start, end, minutes, kind, activity_text)  kind: admin/topic/lab/break/lunch/assess/recap
 SCHEDULE = {
- 1: ("Manage Azure Identities, Governance & Storage", [
+ 1: ("Engagement Management & Reconnaissance", [
     ("9:00","9:30",30,"admin","Welcome, course introduction, ground rules and mandatory digital attendance (AM)"),
-    ("9:30","10:30",60,"topic","Topic 1 — Manage Azure Identities and Governance: Entra ID, RBAC, Azure Policy, subscriptions, resource groups, locks, tags and cost (concepts + demo)"),
+    ("9:30","10:30",60,"topic","Topic 1 — Engagement Management: pre-engagement, SoW/NDA/RoE, threat modelling, MITRE ATT&CK, CVSS and reporting (concepts + demo)"),
     ("10:30","10:45",15,"break","Tea break"),
-    ("10:45","13:00",135,"lab","Hands-on: "+lab_titles([1,2,3,4])),
+    ("10:45","13:00",135,"lab","Hands-on: "+lab_titles([1,2,3,4,5])),
     ("13:00","14:00",60,"lunch","Lunch break"),
-    ("14:00","15:30",90,"lab","Hands-on: "+lab_titles([5,6])+". Topic 2 — Implement and Manage Storage: storage accounts, redundancy, encryption (concepts)"),
+    ("14:00","15:30",90,"lab","Topic 2 — Reconnaissance and Enumeration: passive OSINT, WHOIS/DNS, certificate transparency (concepts). Hands-on: "+lab_titles([6,7,8])),
     ("15:30","15:45",15,"break","Tea break"),
-    ("15:45","17:45",120,"lab","Hands-on: "+lab_titles([7,8,9,10,11])),
+    ("15:45","17:45",120,"lab","Hands-on: "+lab_titles([9,10,11,12,13,14])),
     ("17:45","18:00",15,"recap","Day 1 recap, Q&A and PM digital attendance"),
  ]),
- 2: ("Deploy Compute Resources & Virtual Networking", [
+ 2: ("Enumeration, Vulnerability Analysis & Exploitation", [
     ("9:00","9:15",15,"recap","Day 1 recap and mandatory digital attendance (AM)"),
-    ("9:15","10:30",75,"topic","Topic 3 — Deploy and Manage Azure Compute Resources: ARM/Bicep, VMs, scale sets, containers, App Service (concepts + demo)"),
+    ("9:15","10:30",75,"topic","Topic 3 — Vulnerability Discovery and Analysis: network, web, container and secrets scanning, finding validation (concepts + demo)"),
     ("10:30","10:45",15,"break","Tea break"),
-    ("10:45","13:00",135,"lab","Hands-on: "+lab_titles([12,13,14,15])),
+    ("10:45","13:00",135,"lab","Hands-on: "+lab_titles([15,16,17,18,19])),
     ("13:00","14:00",60,"lunch","Lunch break"),
-    ("14:00","15:30",90,"lab","Hands-on: "+lab_titles([16,17])),
+    ("14:00","15:30",90,"lab","Topic 4 — Attacks and Exploits: Metasploit, credential attacks, privilege escalation (concepts). Hands-on: "+lab_titles([20,21,22])),
     ("15:30","15:45",15,"break","Tea break"),
-    ("15:45","17:45",120,"lab","Topic 4 — Implement and Manage Virtual Networking (concepts). Hands-on: "+lab_titles([18,19])),
+    ("15:45","17:45",120,"lab","Hands-on: "+lab_titles([23,24,25,26,27])),
     ("17:45","18:00",15,"recap","Day 2 recap, Q&A and PM digital attendance"),
  ]),
- 3: ("Networking, Monitoring, Maintenance & Assessment", [
+ 3: ("Attacks, Post-Exploitation & Assessment", [
     ("9:00","9:15",15,"recap","Day 2 recap and mandatory digital attendance (AM)"),
-    ("9:15","10:45",90,"lab","Hands-on: "+lab_titles([20,21,22])),
+    ("9:15","10:45",90,"lab","Hands-on: "+lab_titles([28,29,30,31,32])),
     ("10:45","11:00",15,"break","Tea break"),
-    ("11:00","13:00",120,"lab","Topic 5 — Monitor and Maintain Azure Resources (concepts). Hands-on: "+lab_titles([23,24])),
+    ("11:00","13:00",120,"lab","Topic 5 — Post-exploitation and Lateral Movement (concepts). Hands-on: "+lab_titles([33,34,35])),
     ("13:00","14:00",60,"lunch","Lunch break"),
-    ("14:00","15:30",90,"lab","Hands-on: "+lab_titles([25,26])),
+    ("14:00","15:30",90,"lab","Hands-on: "+lab_titles([36,37])+". Course recap and exam preparation"),
     ("15:30","15:45",15,"break","Tea break"),
     ("15:45","16:00",15,"assess","Briefing for Assessment"),
     ("16:00","17:00",60,"assess","Written Assessment (WA) — Short-Answer Questions (SAQ), 1 hour, open book"),
-    ("17:00","18:00",60,"assess","Practical Performance (PP) — hands-on Azure tasks, 1 hour, open book. PM digital attendance"),
+    ("17:00","18:00",60,"assess","Practical Performance (PP) — hands-on penetration-testing tasks on Kali Linux, 1 hour, open book. PM digital attendance"),
  ]),
 }
 
@@ -75,7 +83,10 @@ prodoc.style_headings(doc)
 prodoc.add_cover_page(doc,"LESSON PLAN",C.TITLE,C.VERSION.lstrip("v"),
                       org_logo=os.path.join(ASSETS,"tertiary-infotech-logo.png"),
                       course_logo=None, course_code=C.COURSE_CODE)
-prodoc.add_version_control(doc,[(C.VERSION.lstrip("v"),C.VERSION_DATE,"Initial release — AZ-104 3-day lesson plan aligned to the 26 labs.",C.TRAINER)])
+prodoc.add_version_control(doc,[
+ ("1.0",C.VERSION_DATE,"Initial release — CompTIA PenTest+ (PT0-003) 3-day lesson plan aligned to the 35 hands-on labs.",C.TRAINER),
+ (C.VERSION.lstrip("v"),C.VERSION_DATE,"Added Lab 12 (Wireshark/tcpdump) and Lab 21 (Netcat/Socat shells) — schedule now covers 37 labs across the three days.",C.TRAINER),
+])
 prodoc.add_toc(doc)
 
 def H(text,level=1):
@@ -86,7 +97,7 @@ info=[("Course Title",C.TITLE),("WSQ Course Reference",C.COURSE_CODE),
       ("Training Provider",C.ORG+"  ("+C.UEN.replace('UEN: ','UEN ')+")"),
       ("Duration","3 days · 8 training hours per day (24 hours)"),
       ("Daily Timing","9:00 am – 6:00 pm (1-hour lunch; tea breaks within training time)"),
-      ("Mode","Instructor-led, hands-on labs in the Azure Portal and Azure Cloud Shell"),
+      ("Mode","Instructor-led, hands-on penetration-testing labs on Kali Linux against authorised targets"),
       ("Trainer",C.TRAINER)]
 t=doc.add_table(rows=0,cols=2); t.style="Table Grid"
 for k,v in info:

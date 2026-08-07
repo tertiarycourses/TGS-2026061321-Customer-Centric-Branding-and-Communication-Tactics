@@ -58,6 +58,17 @@ def main():
                     break
         entries.append((lvl, text, page or 1))
 
+    # 3b) a multi-page static TOC pushes every body page down between passes
+    #     (the pass-1 PDF was measured with the ~1-page placeholder). Offset by
+    #     the extra pages the injected TOC occupies. offset is 0 for small TOCs
+    #     (e.g. the Lesson Plan), so this never regresses single-page documents.
+    LINES_PER_PAGE = 44
+    toc_lines = len(entries) + 2            # "Contents" heading + spacing
+    toc_pages = max(1, -(-toc_lines // LINES_PER_PAGE))
+    offset = toc_pages - 1
+    if offset:
+        entries = [(lvl, text, pg + offset) for lvl, text, pg in entries]
+
     # 4) find the placeholder TOC paragraph (contains a TOC field or the hint text)
     placeholder = None
     for p in doc.paragraphs:

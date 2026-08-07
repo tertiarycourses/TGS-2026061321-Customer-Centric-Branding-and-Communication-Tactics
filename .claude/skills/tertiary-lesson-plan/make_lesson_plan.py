@@ -8,17 +8,17 @@ import prodoc
 
 REPO_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-# Logo lookup: prefer the course's .claude/skills/tertiary-course-slides/assets, else the copies bundled in this skill.
+# Logo lookup: prefer the course's courseware/assets, else the copies bundled in this skill.
 def _logo(name):
     here = os.path.dirname(os.path.abspath(__file__))
-    for p in (os.path.join(REPO_DIR, ".claude/skills/tertiary-course-slides/assets", name), os.path.join(here, "assets", name)):
+    for p in (os.path.join(REPO_DIR, "courseware/assets", name), os.path.join(here, "assets", name)):
         if os.path.exists(p):
             return p
     return None
 
 # ─── EDIT PER COURSE ─────────────────────────────────────────────
-TITLE       = "Agentic AI Automation with n8n"   # <<Course Title>>
-COURSE_CODE = "TGS-2023035977"                    # <<Course Code, e.g. TGS-XXXXXXXXXX>>
+TITLE       = "<<Course Title>>"
+COURSE_CODE = "<<Course Code, e.g. TGS-XXXXXXXXXX>>"
 # ─────────────────────────────────────────────────────────────────
 
 from docx import Document

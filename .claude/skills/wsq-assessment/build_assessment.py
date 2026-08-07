@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Build the WSQ assessment set for 'Agentic AI Automation with n8n' (TGS-2023035977):
-  - Written Assessment (SAQ)  — 12 open-ended KNOWLEDGE questions (K1–K12), aligned to the slides
-  - Practical Performance (PP) — 5 PRACTICAL tasks (LO1–LO5), aligned to the in-class activities
+"""Build the WSQ assessment set for 'Application Integration with Docker and Kubernetes' (TGS-2021010366):
+  - Written Assessment (SAQ)  — 5 open-ended KNOWLEDGE questions (K1–K5), aligned to the slides
+  - Practical Performance (PP) — 4 PRACTICAL tasks (LO1–LO4), aligned to the in-class activities
 Each instrument is produced as a Question Paper and a matching Answer Key (4 DOCX total),
-all with the WSQ house cover page (same as the Lesson Plan / Learner Guide) + version control.
+all with the WSQ house cover page (same as the Lesson Plan / Learner Guide). Page 1 is the cover;
+page 2 carries Trainee Information + Instructions + Grading; the questions/tasks begin on page 3.
 Body: Arial 11.
 """
 import os, sys
@@ -40,185 +41,258 @@ for _cand in (os.path.join(REPO, ".claude/skills/tertiary-lesson-plan"),
 import prodoc  # cover page + version control + page numbers (same as LP/LG)
 
 # ─── EDIT PER COURSE ────────────────────────────────────────────────────────
-TITLE       = "Agentic AI Automation with n8n"   # <<Course Title>>
-COURSE_CODE = "TGS-2023035977"                    # <<Course Code, e.g. TGS-XXXXXXXXXX>>
+TITLE       = "Application Integration with Docker and Kubernetes"
+COURSE_CODE = "TGS-2021010366"
 # ────────────────────────────────────────────────────────────────────────────
+# The cover page renders prodoc's module-level TGS constant. Override it so the
+# assessment cover shows THIS course's ref (works with either prodoc version —
+# the older project prodoc has no course_code kwarg).
+prodoc.TGS = f"TGS Ref No: {COURSE_CODE}"
 OUT   = os.path.join(REPO, "assessment")
 
-# Logos: prefer the course's own .claude/skills/tertiary-course-slides/assets, else fall back to the copies bundled
+# Logos: prefer the course's own courseware/assets, else fall back to the copies bundled
 # in this skill (so the assessment builds even outside this project). Replace the course
 # logo per course; the Tertiary Infotech logo is the same for every WSQ course.
 def _logo(name):
     here = os.path.dirname(os.path.abspath(__file__))
-    for p in (os.path.join(REPO, ".claude/skills/tertiary-course-slides/assets", name), os.path.join(here, "assets", name)):
+    for p in (os.path.join(REPO, "courseware/assets", name), os.path.join(here, "assets", name)):
         if os.path.exists(p):
             return p
     return None
 ORG_LOGO    = _logo("tertiary-infotech-logo.png")
-COURSE_LOGO = _logo("n8n-course-logo.png")
+COURSE_LOGO = _logo("docker-k8s-course-logo.png")   # None if absent → Tertiary-only cover (as LP/LG)
 
 Q_VER, A_VER = "v5", "v5"   # single standardised version across all four files
 BRAND = RGBColor(0x1F, 0x6F, 0xEB); DARK = RGBColor(0x11, 0x18, 0x27); GREY = RGBColor(0x55, 0x5B, 0x66)
 # Assessments carry the cover page only — no Document Version Control Record.
 
 # ---------------------------------------------------------------- WRITTEN (KNOWLEDGE)
-# (criterion, context, question, [model-answer points])
+# (criterion, context, question, [model-answer points]) — each traces to the course slides.
 WRITTEN = [
  ("K1",
-  "Generative AI systems are typically designed to produce content in response to user prompts, while agentic "
-  "AI systems are built to plan, decide, and take actions autonomously to achieve goals over multiple steps.",
-  "What are the key differences between Generative AI and Agentic AI in terms of capabilities, behaviour and use cases?",
-  ["Autonomy: Generative AI responds to a prompt; Agentic AI plans, decides and acts on its own.",
-   "Goals: Generative AI handles a single task; Agentic AI pursues a multi-step goal.",
-   "Tools/memory: Agentic AI calls tools/APIs, keeps memory and looks up data (RAG); Generative AI does not.",
-   "Use cases: content generation vs. autonomous, multi-step workflows (e.g. a Telegram support agent)."]),
+  "Containers have largely replaced virtual machines as the unit of application packaging. A VM virtualises "
+  "hardware and runs a full guest operating system on a hypervisor, while a container packages just the "
+  "application and its dependencies.",
+  "What are the differences between a Virtual Machine and a container, and why do these differences matter in "
+  "modern application development?",
+  ["A VM virtualises hardware and runs a full guest OS on a hypervisor; a container shares the host OS kernel "
+   "and packages only the application plus its dependencies.",
+   "VMs are heavier: gigabytes in size, boot in seconds–minutes, and carry hypervisor overhead "
+   "(e.g. VMware, VirtualBox, EC2).",
+   "Containers are lighter: megabytes in size, start in milliseconds, with minimal overhead "
+   "(e.g. Docker, containerd).",
+   "Why it matters: containers pack many more workloads per host, give consistent 'build once, run anywhere' "
+   "environments, and start/scale fast — ideal for microservices and CI/CD. "
+   "(Slides: Why Containers — Virtual Machines vs Containers / How It Works — Docker Architecture)"]),
  ("K2",
-  "In n8n, workflows can be started in different ways depending on how and when automation should occur — by a "
-  "user action, a time-based event, or a request from an external system.",
-  "What are the key trigger nodes in n8n that can be used to start a workflow?",
-  ["Manual Trigger", "Form Trigger (form submission)", "Schedule Trigger (time-based)",
-   "Webhook (external HTTP request)", "Telegram Trigger / Chat Trigger (incoming message)"]),
+  "A Docker image is built automatically from a text recipe. Getting the instructions and their order right "
+  "controls both what the image contains and how fast it rebuilds.",
+  "How do you create a Docker image, and what are the key instructions in a Dockerfile?",
+  ["A Dockerfile is a text recipe of instructions Docker runs to build an image automatically; you build it "
+   "with `docker build -t <name> .`.",
+   "Key instructions: FROM (base image), WORKDIR, COPY, RUN, ENV, EXPOSE, VOLUME, and CMD / ENTRYPOINT.",
+   "Each instruction creates a cached layer; unchanged layers are reused for fast rebuilds. Order matters — put "
+   "rarely-changing steps first (COPY requirements.txt + RUN pip install BEFORE COPY . .) to keep dependencies "
+   "cached, and use a .dockerignore to keep junk out of the build context.",
+   "CMD sets a default, overridable command; ENTRYPOINT sets a fixed executable with args appended. "
+   "(Slides: Building Images — What is a Dockerfile? / Layers & Cache / CMD vs ENTRYPOINT)"]),
  ("K3",
-  "After a workflow is triggered, action nodes process data, apply logic and control the flow — enabling "
-  "decision-making, branching, data handling and custom logic.",
-  "What are some key action / logic nodes in n8n used to control workflow logic and data processing?",
-  ["IF node (branching on a condition)", "Switch node (multi-way routing)", "Merge node",
-   "Edit Fields (Set) node", "Code node (JavaScript/Python)", "Filter node"]),
+  "Docker runs containers on a single host. As applications grow you need to run and manage many containers "
+  "reliably across a cluster of machines.",
+  "What are the benefits of using Kubernetes for deploying and managing containerised applications?",
+  ["Docker runs containers on one host; Kubernetes orchestrates them across a cluster of nodes.",
+   "It self-heals (restarts failed Pods), scales workloads up and down, and performs rolling updates with no "
+   "downtime.",
+   "It is declarative: you describe the desired state in YAML and Kubernetes continuously makes it true; "
+   "kubectl is the CLI (get / describe / apply / delete / scale / rollout).",
+   "Architecture: a Control Plane (API Server, etcd, Scheduler, Controller Manager) drives Worker Nodes "
+   "(kubelet, kube-proxy) that run your Pods. "
+   "(Slides: Orchestration — Why Kubernetes? / How It Works — Cluster Architecture)"]),
  ("K4",
-  "An AI agent perceives context, reasons about a task and takes actions autonomously to achieve a goal. To work, "
-  "it must combine reasoning with memory and the ability to use external systems.",
-  "What are the key components required to build a functional AI agent in n8n?",
-  ["A Chat Model (LLM) for reasoning — e.g. OpenAI or Google Gemini.",
-   "Memory (e.g. a window buffer) to retain conversation context.",
-   "Tools (Vector Store, Data Table, HTTP, sub-workflows) the agent can call.",
-   "A System Instruction that defines the agent's scope, rules and how to route between tools."]),
+  "In Kubernetes a Pod's IP address changes every time it restarts, scales or is updated, so clients cannot "
+  "target Pods directly. Services solve this.",
+  "Why do Pods need Services, and what are the main types of Service in Kubernetes and how does each function?",
+  ["Pod IPs change on every restart, scale or update, so you can't rely on them; a Service gives a stable "
+   "address and load-balances across the Pods it selects (by labels).",
+   "ClusterIP — internal only; reachable from inside the cluster for service-to-service traffic (the default).",
+   "NodePort — opens a fixed port (30000–32767) on every node, giving external access to the Service.",
+   "LoadBalancer — provisions an external (cloud) load balancer with a single external IP, extending NodePort; "
+   "the labs use ClusterIP and NodePort. "
+   "(Slide: Networking — Why Services?)"]),
  ("K5",
-  "You are building an AI system that must retrieve relevant information from your own documents and use that "
-  "context to generate accurate, up-to-date answers with an LLM — improving factual grounding and reducing "
-  "hallucination without retraining the model.",
-  "Which type of AI workflow best supports this combination of information retrieval and language generation, and how does it work?",
-  ["Retrieval-Augmented Generation (RAG).",
-   "Documents are split into chunks, embedded, and stored in a vector store.",
-   "At query time the question is embedded and the closest chunks are retrieved.",
-   "The retrieved chunks are given to the LLM as context so it answers only from your documents."]),
- ("K6",
-  "You are designing an n8n workflow that must fetch data from external systems and online services (e.g. a "
-  "market-data or news API) and use the returned data in later steps.",
-  "Which method would you use in n8n to connect to external data sources and services, and what do you configure on it?",
-  ["The HTTP Request node (or a built-in service node).",
-   "Configure the method (GET/POST), URL, headers and query parameters.",
-   "Store API keys in credentials (e.g. Query Auth / header auth) — never hard-coded.",
-   "Use the structured JSON response in downstream nodes."]),
- ("K7",
-  "In a RAG system, text must be turned into a form that supports meaning-based (semantic) search before it can "
-  "be stored and retrieved.",
-  "Explain how embeddings and a vector store enable semantic retrieval in a RAG pipeline.",
-  ["An embedding turns a chunk of text into a vector (a list of numbers capturing meaning).",
-   "Similar meanings produce vectors that are close together.",
-   "Vectors are saved in a vector store; the query is embedded and the nearest vectors are retrieved (e.g. cosine similarity).",
-   "Vector indexing keeps similarity search fast as the dataset grows."]),
- ("K8",
-  "You try to upload documents into a vector store for RAG, but the ingestion fails or the vectors are rejected. "
-  "The store was already initialised with a specific embedding configuration.",
-  "What is the most likely underlying issue to check first, and what is the rule?",
-  ["Embedding-dimension mismatch.",
-   "The embedding model's output dimension must equal the vector store's configured dimension.",
-   "e.g. OpenAI text-embedding-3-small = 1536 dimensions → the index/table/collection must be 1536.",
-   "Changing the embedding model changes the dimension (e.g. -3-large = 3072), so recreate the store to match."]),
- ("K9",
-  "An in-memory vector store is simple but is lost when the workflow restarts. For production RAG you want a "
-  "store that persists and scales.",
-  "Name persistent vector databases you can use for RAG in n8n, and one distinguishing trait of each.",
-  ["Pinecone — fully-managed SaaS; just create an index (dimension + metric), zero-ops.",
-   "Supabase (pgvector) — Postgres + a vector extension; good if you already use Postgres.",
-   "Qdrant — open-source; run via Docker or Qdrant Cloud for full control.",
-   "(All must match the embedding dimension, e.g. 1536.)"]),
- ("K10",
-  "To make an AI agent trustworthy, you place safety checks around it so that unsafe input never reaches the "
-  "agent and unsafe output never reaches the user.",
-  "What is the difference between an input (pre) guardrail and an output (post) guardrail, and what does each block?",
-  ["Input / pre-guardrail: an LLM classifies each incoming message ALLOW or BLOCK before it reaches the agent.",
-   "It blocks prompt injection, jailbreaks and requests for another person's private data.",
-   "Output / post-guardrail: an LLM checks every reply SAFE or LEAK before it reaches the user.",
-   "It blocks salary figures, NRIC, credentials or system-instruction leaks; a blocked case returns a safe canned reply."]),
- ("K11",
-  "Some workflows must start automatically the moment an event happens outside n8n — a form submission, a website "
-  "chat message, or a call from another application — rather than on a schedule or manual run.",
-  "What is the primary purpose of a Webhook in n8n, and what node pairs with it to reply to the caller?",
-  ["A Webhook is a URL that external systems call to trigger the workflow in real time.",
-   "Use cases: website chat, form submissions, payment/GitHub/Stripe events.",
-   "Pair it with a Respond to Webhook node to send a reply back to the caller.",
-   "Set Allowed Origins (CORS) = * so a browser page can call it."]),
- ("K12",
-  "n8n lets you connect different Large Language Models (LLMs) through their APIs, depending on the use case, "
-  "performance needs and provider availability.",
-  "List three popular LLM providers commonly used with n8n for AI automation.",
-  ["OpenAI (GPT models)", "Google Gemini", "Anthropic Claude", "(others are available via API / OpenRouter)"]),
+  "Not every workload runs forever. Alongside long-running Deployments, Kubernetes provides objects for work "
+  "that finishes.",
+  "What is the difference between a Job and a CronJob in Kubernetes, and when should each be used?",
+  ["A Job runs one or more Pods to completion — it runs to success and then stops, and does not restart on "
+   "success; use it for finite batch work (e.g. a one-off TaskBoard report or a database migration).",
+   "A CronJob runs Jobs on a schedule using standard cron syntax; use it for recurring scheduled work "
+   "(e.g. a nightly cleanup or backup).",
+   "Contrast with a Deployment, which keeps long-running Pods alive indefinitely (like a web server) — "
+   "Jobs and CronJobs are for work that is meant to finish. "
+   "(Slides: Persist & Schedule — Storage & Batch Workloads / Lab 19 — Jobs & CronJobs)"]),
 ]
 
 # ---------------------------------------------------------------- PRACTICAL (ACTIVITY-BASED)
 SCENARIO = (
- "FryTech Appliances is a fast-growing electronics company selling air-fryer products through e-commerce "
- "platforms, retail distributors and corporate/bulk channels. As demand grows, so does the volume and "
- "complexity of customer interactions — pre-sales enquiries, post-sales support, warranty claims and "
- "logistics. Leadership decides that simple forms and autoresponders are no longer enough and adopts "
- "agentic AI-driven workflows, orchestrated in n8n, to improve efficiency, scalability and customer "
- "satisfaction. Complete the tasks below, each mirroring an automation you built in class.")
+ "You have joined a startup as a DevOps engineer. The team is shipping a small web application and you own the "
+ "full path from a single container to a Kubernetes cluster: containerise a Flask app and publish it to Docker "
+ "Hub, stand up a multi-service stack with Docker Compose, then migrate the workload to Kubernetes — deploying "
+ "and troubleshooting a Pod, exposing it with a Service, and giving it persistent storage. Complete the four "
+ "tasks below; each mirrors a hands-on activity you did in class. For each task, paste your Dockerfile / YAML "
+ "and a screenshot of your output as evidence.")
 
-# (label, criterion, task prompt, box caption, [model build-step points citing the activity])
+# (label, criterion, task prompt, box caption, model-answer build steps citing the activity)
+BOX_CAP = "Paste your Dockerfile / YAML and a screenshot of your output in the box below"
 PRACTICAL = [
  ("Task 1", "LO1",
-  "FryTech receives a high volume of repetitive customer enquiries (pricing, wattage, capacity, warranty). "
-  "Design and implement an automated customer-enquiry workflow in n8n. It must capture enquiries from a web "
-  "Form, record the details in a Data Table (or Google Sheets), send a confirmation email to the customer, and "
-  "notify the sales/support team — using conditional logic where appropriate. Publish the form and turn its URL "
-  "into a QR code.",
-  "Show the screenshot of the n8n workflow in the box below",
-  ["Add a Form Trigger with fields (Name, Email, Phone, Enquiry) — as in Activity 1.",
-   "Add a Gmail node to email the team and a second Gmail node to send the customer a confirmation.",
-   "Add a Data Table (Insert Row) — or Google Sheets — to store each submission (Activity 2 / 3b).",
-   "Optionally add an IF node to route by enquiry type / attending (Activity 3a).",
-   "Save & Activate; copy the Form production URL and generate a QR code for it (Activity 1)."]),
+  "Containerise a Flask application (Docker). You are given a simple Flask note-taking app (app.py and "
+  "requirements.txt). "
+  "Part A — Write a Dockerfile that: uses python:3.12-slim; sets WORKDIR to /app; copies requirements.txt and "
+  "installs deps with pip install --no-cache-dir; copies the rest of the code; sets ENV DATA_DIR=/app/data and "
+  "APP_PORT=5000; declares /app/data as a VOLUME; EXPOSEs 5000; and runs the app with python app.py. "
+  "Part B — Build the image as notes-app, run it with the container port mapped to 5001 on the host, add a note "
+  "with curl -X POST -d \"note=Hello Docker\" http://localhost:5001/add and view it with curl "
+  "http://localhost:5001/notes. "
+  "Part C — Tag the image as <your-username>/notes-app:v1, push it to Docker Hub, and state the command someone "
+  "else would run to pull and use it. (Labs 3-4 — Build image · Lab 9 — Docker Hub.)",
+  BOX_CAP,
+  "Part A — Dockerfile:\n"
+  "FROM python:3.12-slim\n"
+  "WORKDIR /app\n"
+  "COPY requirements.txt .\n"
+  "RUN pip install --no-cache-dir -r requirements.txt\n"
+  "COPY . .\n"
+  "ENV DATA_DIR=/app/data\n"
+  "ENV APP_PORT=5000\n"
+  "VOLUME /app/data\n"
+  "EXPOSE 5000\n"
+  "CMD [\"python\", \"app.py\"]\n\n"
+  "Part B — Build & run:\n"
+  "docker build -t notes-app .\n"
+  "docker run -d -p 5001:5000 notes-app\n"
+  "curl -X POST -d \"note=Hello Docker\" http://localhost:5001/add\n"
+  "curl http://localhost:5001/notes\n\n"
+  "Part C — Push to Docker Hub:\n"
+  "docker tag notes-app <your-username>/notes-app:v1\n"
+  "docker login\n"
+  "docker push <your-username>/notes-app:v1\n"
+  "# Someone else pulls & runs:\n"
+  "docker pull <your-username>/notes-app:v1\n"
+  "docker run -p 5001:5000 <your-username>/notes-app:v1"),
  ("Task 2", "LO2",
-  "FryTech wants a chatbot that answers team-member and customer questions about product specifications. Design "
-  "and deploy an AI agent (in Telegram or embedded in a web page) that uses an LLM with memory and at least one "
-  "tool to answer questions grounded in company data.",
-  "Show the screenshot of the n8n workflow in the box below",
-  ["Add a Telegram Trigger (Activity 4a) or a Webhook for a website chatbot (Activity 5).",
-   "Add an AI Agent with a Chat Model (OpenAI/Gemini) and a Simple Memory (window buffer).",
-   "Attach a tool — a Data Table tool for product/spec lookups (Activity 4b) — and write a System Instruction.",
-   "Send the reply back (Telegram Send Message, or Respond to Webhook for the website).",
-   "Save & Activate; test with a product question and confirm a grounded reply."]),
+  "Deploy a multi-service site with Docker Compose. Stand up a WordPress site backed by a MySQL database. "
+  "Part A — Write a docker-compose.yml with two services: db using image mysql:8.0 with env "
+  "MYSQL_ROOT_PASSWORD=rootpass, MYSQL_DATABASE=wordpress, MYSQL_USER=wpuser, MYSQL_PASSWORD=wppass and a named "
+  "volume db-data mounted at /var/lib/mysql; and wordpress using image wordpress:latest, mapping host port 8080 "
+  "to container port 80, with env WORDPRESS_DB_HOST=db, WORDPRESS_DB_USER=wpuser, WORDPRESS_DB_PASSWORD=wppass, "
+  "WORDPRESS_DB_NAME=wordpress, and depends_on db. "
+  "Part B — Start the stack with docker compose up -d, confirm both services with docker compose ps, and open "
+  "http://localhost:8080 to reach the WordPress setup page. (Labs 10-12 — Docker Compose.)",
+  BOX_CAP,
+  "Part A — docker-compose.yml:\n"
+  "services:\n"
+  "  db:\n"
+  "    image: mysql:8.0\n"
+  "    environment:\n"
+  "      MYSQL_ROOT_PASSWORD: rootpass\n"
+  "      MYSQL_DATABASE: wordpress\n"
+  "      MYSQL_USER: wpuser\n"
+  "      MYSQL_PASSWORD: wppass\n"
+  "    volumes:\n"
+  "      - db-data:/var/lib/mysql\n"
+  "  wordpress:\n"
+  "    image: wordpress:latest\n"
+  "    ports:\n"
+  "      - \"8080:80\"\n"
+  "    environment:\n"
+  "      WORDPRESS_DB_HOST: db\n"
+  "      WORDPRESS_DB_USER: wpuser\n"
+  "      WORDPRESS_DB_PASSWORD: wppass\n"
+  "      WORDPRESS_DB_NAME: wordpress\n"
+  "    depends_on:\n"
+  "      - db\n"
+  "volumes:\n"
+  "  db-data:\n\n"
+  "Part B — Run & verify:\n"
+  "docker compose up -d\n"
+  "docker compose ps        # both services Up\n"
+  "# Browse http://localhost:8080 -> WordPress setup page"),
  ("Task 3", "LO3",
-  "FryTech wants staff to query internal documents (product manuals / IT-Support FAQ / policies) in natural "
-  "language. Build a Retrieval-Augmented Generation (RAG) workflow: users upload documents which are embedded "
-  "and stored in a vector store, and an AI agent retrieves the most relevant chunks and answers strictly from "
-  "them.",
-  "Show the screenshot of the n8n workflow in the box below",
-  ["Ingestion: an upload point → Embeddings → Vector Store (Insert) with a Default Data Loader (Activity 7a).",
-   "Upload a document (e.g. the IT-Support FAQ PDF) from the web uploader into the vector store.",
-   "Chat: an AI Agent with the Vector Store exposed as a retrieve-as-tool (knowledge_base) answers only from retrieved chunks (Activity 7a).",
-   "For persistence, ingest into a vector database — Supabase / Pinecone / Qdrant — matching the 1536 embedding dimension (Activity 7b).",
-   "Test: ask a question answerable only from the document; confirm a grounded answer."]),
+  "Deploy and troubleshoot a Pod in Kubernetes. "
+  "1) Create the namespace ckad-prep. 2) In it, create a Pod named mypod with image nginx:2.3.5 exposing port "
+  "80. 3) Identify why the container will not start and write the root cause to pod-error.txt. 4) Change the "
+  "Pod's image to nginx:1.15.12. 5) List the Pod and confirm it is Running. 6) Shell into the container, run ls, "
+  "note the output, and exit. 7) Retrieve the Pod's IP address. 8) Run a temporary busybox Pod, shell in and "
+  "wget the nginx Pod on port 80. 9) Show the logs of mypod. 10) Delete the Pod and the namespace. "
+  "(Labs 13-14 — Pods & Namespaces.)",
+  BOX_CAP,
+  "1. Create namespace:\n"
+  "kubectl create namespace ckad-prep\n"
+  "2. Create the Pod (bad image):\n"
+  "kubectl run mypod --image=nginx:2.3.5 --port=80 -n ckad-prep\n"
+  "3. Diagnose — image nginx:2.3.5 does not exist -> ImagePullBackOff:\n"
+  "kubectl get pod -n ckad-prep            # STATUS: ImagePullBackOff\n"
+  "kubectl describe pod mypod -n ckad-prep # Events: manifest not found\n"
+  "echo \"Image nginx:2.3.5 does not exist on Docker Hub.\" > pod-error.txt\n"
+  "4. Fix the image:\n"
+  "kubectl set image pod mypod mypod=nginx:1.15.12 -n ckad-prep\n"
+  "5. Verify Running:\n"
+  "kubectl get pod -n ckad-prep            # STATUS: Running\n"
+  "6. Shell in (run ls, then exit):\n"
+  "kubectl exec -it mypod -n ckad-prep -- /bin/sh\n"
+  "7. Pod IP:\n"
+  "kubectl get pods -o wide -n ckad-prep\n"
+  "8. wget from a temporary busybox Pod:\n"
+  "kubectl run busybox --image=busybox --rm -it --restart=Never -n ckad-prep -- wget -O- <pod-ip>:80\n"
+  "9. Render logs:\n"
+  "kubectl logs mypod -n ckad-prep\n"
+  "10. Clean up:\n"
+  "kubectl delete pod mypod -n ckad-prep\n"
+  "kubectl delete namespace ckad-prep"),
  ("Task 4", "LO4",
-  "FryTech must integrate with external systems. Build a workflow that either (a) uses a Webhook to receive data "
-  "from an external web page and respond to it, or (b) uses an HTTP Request to query an external API (e.g. market "
-  "or news data) and use the result. When run, show the data is received/queried correctly.",
-  "Show the screenshot of the n8n workflow in the box below",
-  ["Option A — Webhook (Activity 5): add a Webhook (CORS = *), process the request, and reply with Respond to Webhook; call it from a web page.",
-   "Option B — HTTP Request (Activity 6): call an external API with method, headers and query parameters; store the API key in a credential.",
-   "Use the returned JSON in downstream nodes (e.g. feed it to an AI Agent).",
-   "Save & Activate; run it and show the collected/queried data in the execution."]),
- ("Task 5", "LO5",
-  "FryTech must secure its AI agent against prompt injection and data leaks. Build a guardrail that protects the "
-  "agent: an input guardrail that classifies each message ALLOW/BLOCK before the agent (and, optionally, an "
-  "output guardrail on the reply, or a human-in-the-loop approval step).",
-  "Show the screenshot of the n8n workflow in the box below",
-  ["Add a Webhook → an LLM Chain 'Input Guardrail' that replies ALLOW or BLOCK (Activity 8c).",
-   "Add an IF node on the result: BLOCK → Respond with a safety message; ALLOW → continue to the AI Agent.",
-   "Optionally add an 'Output Guardrail' LLM Chain (SAFE/LEAK) before Respond to Webhook.",
-   "Optionally add a human-in-the-loop approval (Gmail Send-and-Wait) for sensitive actions (Activity 8a).",
-   "Test: a normal question passes; 'ignore previous instructions…' is blocked."]),
+  "Kubernetes Services and persistent storage. "
+  "Part A — Create a deployment named myapp with 2 replicas of image nginx exposing container port 80. Expose "
+  "it so it is reachable from inside the cluster, and verify with a temporary busybox Pod running wget against "
+  "the Service. Then change the Service type so the Pods are reachable from outside the cluster and wget it "
+  "from outside. "
+  "Part B — Create a PersistentVolume my-pv of 1Gi using hostPath /tmp/k8s-data, and a PersistentVolumeClaim "
+  "my-pvc requesting 500Mi; verify the PVC is Bound. Create a Pod storage-pod (image busybox) that mounts the "
+  "PVC at /data and writes \"hello from storage\" to /data/message.txt. Delete and recreate the Pod, verify the "
+  "data persists, then clean up all resources. (Labs 15 — Deployments · 17 — Services · 18 — Storage.)",
+  BOX_CAP,
+  "Part A — Routing traffic:\n"
+  "kubectl create deployment myapp --image=nginx --replicas=2 --port=80\n"
+  "kubectl expose deployment myapp --port=80 --target-port=80          # ClusterIP\n"
+  "kubectl run tmp --image=busybox --rm -it --restart=Never -- wget -O- myapp:80\n"
+  "# External access — switch to NodePort:\n"
+  "kubectl delete service myapp\n"
+  "kubectl expose deployment myapp --type=NodePort --port=80 --target-port=80\n"
+  "kubectl get svc myapp                      # note the 3xxxx NodePort\n"
+  "wget -O- localhost:<NodePort>\n\n"
+  "Part B — Persistent storage:\n"
+  "# pv.yaml\n"
+  "apiVersion: v1\n"
+  "kind: PersistentVolume\n"
+  "metadata: { name: my-pv }\n"
+  "spec:\n"
+  "  capacity: { storage: 1Gi }\n"
+  "  accessModes: [ReadWriteOnce]\n"
+  "  hostPath: { path: /tmp/k8s-data }\n"
+  "# pvc.yaml\n"
+  "apiVersion: v1\n"
+  "kind: PersistentVolumeClaim\n"
+  "metadata: { name: my-pvc }\n"
+  "spec:\n"
+  "  accessModes: [ReadWriteOnce]\n"
+  "  resources: { requests: { storage: 500Mi } }\n"
+  "kubectl apply -f pv.yaml && kubectl apply -f pvc.yaml\n"
+  "kubectl get pv,pvc                          # STATUS: Bound\n"
+  "# storage-pod mounts my-pvc at /data and writes message.txt\n"
+  "kubectl apply -f pod.yaml\n"
+  "kubectl exec storage-pod -- cat /data/message.txt   # hello from storage\n"
+  "kubectl delete pod storage-pod && kubectl apply -f pod.yaml\n"
+  "kubectl exec storage-pod -- cat /data/message.txt   # data persists\n"
+  "kubectl delete pod storage-pod; kubectl delete pvc my-pvc; kubectl delete pv my-pv"),
 ]
 
 # ---------------------------------------------------------------- doc helpers
@@ -238,12 +312,24 @@ def para(doc, text, size=11, bold=False, italic=False, color=None, after=6, befo
 def heading(doc, text, size=13):
     para(doc, text, size=size, bold=True, color=BRAND, after=6, before=8)
 
-def answer_box(doc, lines=None, height_pt=90):
-    """1x1 bordered box. If lines given, fill as bullet-style model answer."""
+def answer_box(doc, lines=None, code=None, height_pt=90):
+    """1x1 bordered box. `lines` → bullet-style model answer; `code` → monospace
+    code/YAML/command block (indentation preserved); neither → empty answer space."""
     t = doc.add_table(rows=1, cols=1); t.style = "Table Grid"; t.alignment = WD_TABLE_ALIGNMENT.CENTER
     cell = t.rows[0].cells[0]
     cell.paragraphs[0].text = ""
-    if lines:
+    if code:
+        run = cell.paragraphs[0].add_run("Suggestive answers (not exhaustive):")
+        run.bold = True; run.font.size = Pt(10.5)
+        for ln in code.split("\n"):
+            b = cell.add_paragraph(style=None)
+            b.paragraph_format.space_after = Pt(0); b.paragraph_format.space_before = Pt(0)
+            rr = b.add_run(ln if ln else " ")
+            rr.font.name = "Consolas"; rr.font.size = Pt(9)
+            rr._element.rPr.rFonts.set(qn('w:cs'), "Consolas")
+            wt = rr._element.find(qn('w:t'))
+            if wt is not None: wt.set(qn('xml:space'), 'preserve')
+    elif lines:
         run = cell.paragraphs[0].add_run("Suggestive answers (not exhaustive):")
         run.bold = True; run.font.size = Pt(10.5)
         for ln in lines:
@@ -333,7 +419,7 @@ def build_wa(answers):
     doc = base_doc()
     kind = "Written Assessment (SAQ) — Answer Key" if answers else "Written Assessment (SAQ)"
     prodoc.add_cover_page(doc, kind, TITLE, A_VER if answers else Q_VER,
-                          org_logo=ORG_LOGO, course_logo=COURSE_LOGO, course_code=COURSE_CODE)
+                          org_logo=ORG_LOGO, course_logo=COURSE_LOGO)
     para(doc, TITLE, size=15, bold=True, color=DARK, align=WD_ALIGN_PARAGRAPH.CENTER, after=2)
     para(doc, "Answers to Written Assessment (SAQ)" if answers else "Written Assessment (SAQ)",
          size=13, bold=True, color=BRAND, align=WD_ALIGN_PARAGRAPH.CENTER, after=2)
@@ -347,11 +433,18 @@ def build_wa(answers):
     para(doc, "Short-Answer Questions (Knowledge)", size=13, bold=True, color=BRAND, after=4)
     para(doc, "Answer all questions in your own words. Each question tests underpinning knowledge covered in the "
               "course slides.", size=10.5, italic=True, color=GREY, after=8)
+    # Pagination is EXPLICIT — two questions to a page on the paper, one model answer to a
+    # page in the key. Do not swap this for Word's keepNext/cantSplit: Word pushes an
+    # oversized box to the next page, but Google Docs draws the border anyway and prints the
+    # question text and the page footer straight THROUGH it. See SKILL.md → Pagination.
+    per_page = 1 if answers else 2
     for i, (crit, ctx, q, pts) in enumerate(WRITTEN, 1):
         para(doc, f"Question {i}:", size=11.5, bold=True, after=2, before=6)
         para(doc, ctx, size=11, after=3)
         para(doc, f"{q}  ({crit})", size=11, bold=True, after=4)
         answer_box(doc, lines=pts if answers else None)
+        if i % per_page == 0 and i < len(WRITTEN):
+            page_break(doc)
     suffix = A_VER if answers else Q_VER
     name = (f"Answer to WA (SAQ) - {TITLE} - {suffix}.docx" if answers
             else f"WA (SAQ) - {TITLE} - {suffix}.docx")
@@ -361,7 +454,7 @@ def build_pp(answers):
     doc = base_doc()
     kind = "Practical Performance (PP) — Answer Key" if answers else "Practical Performance (PP)"
     prodoc.add_cover_page(doc, kind, TITLE, A_VER if answers else Q_VER,
-                          org_logo=ORG_LOGO, course_logo=COURSE_LOGO, course_code=COURSE_CODE)
+                          org_logo=ORG_LOGO, course_logo=COURSE_LOGO)
     para(doc, TITLE, size=15, bold=True, color=DARK, align=WD_ALIGN_PARAGRAPH.CENTER, after=2)
     para(doc, "Answers to Practical Performance Assessment" if answers else "Practical Performance Assessment",
          size=13, bold=True, color=BRAND, align=WD_ALIGN_PARAGRAPH.CENTER, after=2)
@@ -375,11 +468,15 @@ def build_pp(answers):
     para(doc, "Practical Problem", size=13, bold=True, color=BRAND, after=4)
     para(doc, "Scenario", size=11.5, bold=True, after=2)
     para(doc, SCENARIO, size=11, after=8)
-    for label, crit, prompt, cap, pts in PRACTICAL:
+    # Practical tasks are long and their boxes are tall, so they get a page each — on the
+    # paper AND in the key. Same rule as the WA: the page break is ours, not the renderer's.
+    for i, (label, crit, prompt, cap, pts) in enumerate(PRACTICAL, 1):
         para(doc, f"{label} ({crit}):", size=11.5, bold=True, after=2, before=6)
         para(doc, prompt, size=11, after=3)
         para(doc, cap, size=10.5, italic=True, color=GREY, after=4)
-        answer_box(doc, lines=pts if answers else None, height_pt=150)
+        answer_box(doc, code=pts if answers else None, height_pt=150)
+        if i < len(PRACTICAL):
+            page_break(doc)
     suffix = A_VER if answers else Q_VER
     name = (f"Answer to PP Assessment - {TITLE} - {suffix}.docx" if answers
             else f"PP Assessment - {TITLE} - {suffix}.docx")

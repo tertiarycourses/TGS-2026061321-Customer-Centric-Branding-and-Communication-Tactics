@@ -7,6 +7,8 @@ description: >
   field, and a body of topics with detailed step-by-step activities.
 ---
 
+> **Key principle:** The course material must be **100% aligned to the exam/skills domains** so that students who take the course can pass the exam.
+
 # WSQ Learner Guide Skill
 
 > **Scope:** This skill (with `wsq-slides` and `wsq-lesson-plan`) applies to **all** Tertiary

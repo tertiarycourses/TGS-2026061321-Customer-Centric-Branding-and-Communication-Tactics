@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
-"""Generate the Customer-Centric Branding and Communication Tactics Learner
-Guide as a DOCX (courseware/LG-*.docx) — DOCX + PDF only, no Markdown mirror
-kept in the repo (wsq-learner-guide HARD RULE 1).
+"""Generate the AZ-104 Learner Guide as BOTH a Markdown mirror (LG-*.md at repo
+root) and a DOCX (courseware/LG-*.docx) from one source, so they never diverge.
 
-House format: cover page, Document Version Control Record, auto TOC, Arial
-11pt body, one section per Learning Unit with concepts, then one subsection
-per activity (Objective · Scenario · Step-by-step · Debrief), a Quick
-Reference table, Support section and the assessment flow. All content is
-driven by course_data + the domain data files, keeping the LG 100% aligned
-with the slide deck and Lesson Plan.
+House format: cover page, Document Version Control Record, auto TOC, Arial 11pt
+body, one section per lab (Objective · Goal · What you'll build · Step-by-step
+with commands · Test it), plus setup, exam-prep and glossary. All content is
+driven by course_data + the domain data files, keeping the LG 100% aligned with
+the slide deck, Lesson Plan and labs.
 """
 import os, sys
 from docx import Document
@@ -19,123 +17,179 @@ HERE=os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0,HERE)
 import course_data as C
 from data_domain1 import DOMAIN1; from data_domain2 import DOMAIN2
 from data_domain3 import DOMAIN3; from data_domain4 import DOMAIN4
-ACT=DOMAIN1+DOMAIN2+DOMAIN3+DOMAIN4
+from data_domain5 import DOMAIN5
+ACT=DOMAIN1+DOMAIN2+DOMAIN3+DOMAIN4+DOMAIN5
 import prodoc
 REPO=os.path.dirname(os.path.dirname(HERE)); ASSETS=os.path.join(REPO,"courseware","assets")
 
-BRAND=RGBColor(0x1F,0x6F,0xEB); DARK=RGBColor(0x11,0x18,0x27); GREY=RGBColor(0x55,0x5B,0x66)
+# ---------------- block DSL (single content stream → MD + DOCX) ----------------
+B=[]
+def h1(t): B.append(("h1",t))
+def h2(t): B.append(("h2",t))
+def h3(t): B.append(("h3",t))
+def p(t):  B.append(("p",t))
+def bullets(xs): B.append(("bullets",xs))
+def steps(xs): B.append(("steps",xs))
+def code(t): B.append(("code",t))
+def note(t): B.append(("note",t))
+def rule(): B.append(("rule",))
 
+# ---------------- content ----------------
+h1("Introduction")
+p(f"This Learner Guide accompanies the WSQ course {C.TITLE} ({C.COURSE_CODE}), conducted by {C.ORG}. "
+  "It provides step-by-step instructions for all 26 hands-on labs, organised by the five official "
+  "AZ-104 exam skill areas. Every lab maps to a published exam objective and is completed in the "
+  "Azure Portal together with Azure Cloud Shell (Azure CLI and PowerShell).")
+p("Use this guide alongside the course slides and the lab files in the labs/ folder of the course "
+  "repository. Each lab creates its own resource group (rg-az104-labNN); always run the clean-up "
+  "step at the end of a lab to avoid unnecessary Azure charges.")
+
+h1("Course Learning Outcomes")
+bullets(C.LEARNING_OUTCOMES)
+
+h1("Before You Start — Environment Setup")
+h3("What you need")
+bullets([
+ "An Azure subscription — an Azure free account or an instructor-provided subscription.",
+ "Contributor access on the subscription; Global Administrator / User Administrator on the Microsoft Entra tenant for the Topic 1 identity labs.",
+ "A modern browser for the Azure Portal (https://portal.azure.com) and Cloud Shell (https://shell.azure.com).",
+])
+h3("Launch Azure Cloud Shell")
+p("Cloud Shell is a browser terminal with the az CLI, Az PowerShell, azcopy and Bicep pre-installed — nothing to install locally. Open it from the >_ icon in the portal, accept the storage prompt on first launch, then choose Bash (for az) or PowerShell (for Az).")
+code("az version            # Azure CLI\naz account show        # confirm your subscription\naz account set --subscription \"<name-or-id>\"   # if you have more than one")
+h3("Conventions used in every lab")
+bullets([
+ "Each lab uses its own resource group named rg-az104-labNN.",
+ "Pick one region (e.g. eastus) and use it consistently across a lab.",
+ "Globally-unique names (storage accounts, ACR, web apps) append a random suffix — change it if a name is taken.",
+ "Run the Clean up step at the end of each lab: az group delete --name rg-az104-labNN --yes --no-wait",
+])
+
+# ---------------- per-topic, per-lab ----------------
+TOPICS_BY_NUM={t["num"]:t for t in C.TOPICS}
+for t in C.TOPICS:
+    h1(f"Topic {t['code']} — {t['title']}  ({t['weighting']})")
+    p(t["subtitle"])
+    h3("Key concepts")
+    bullets(t["concepts"])
+    for a in [x for x in ACT if x["topic"]==t["num"]]:
+        h2(f"Lab {a['num']} — {a['title']}")
+        p(f"Exam objective: {a['objective']}.")
+        p(f"Goal: {a['desc']}")
+        h3("What you'll build")
+        p(a["build"]+f"   (Azure services: {a['services']}.)")
+        h3("Step-by-step")
+        st=[]
+        for i,(instr,cmd) in enumerate(a["steps"],1):
+            st.append((instr,cmd))
+        steps(st)
+        h3("Test it")
+        p(a["test"])
+        note(f"Full commands (Portal + CLI + PowerShell) are in labs/lab-{a['num']:02d}-*.md. "
+             f"Clean up when done: az group delete --name rg-az104-lab{a['num']:02d} --yes --no-wait")
+        rule()
+
+h1("Exam Preparation")
+bullets([
+ "First pass: do every lab via the Azure Portal, reading the References in each lab file.",
+ "Second pass: redo the labs using only the Azure CLI until the command verbs are automatic.",
+ "Review the 'Test it' check and the 'What you learned' bullets for any topic you find hard.",
+ "Take the free Microsoft practice assessment for AZ-104.",
+ "Passing score is 700/1000. Book the exam from your Microsoft Learn profile.",
+])
+
+h1("Glossary")
+gl=[
+ ("Resource group","A container that holds related Azure resources sharing a lifecycle."),
+ ("Microsoft Entra ID","Azure's cloud identity service (authentication) — formerly Azure AD."),
+ ("RBAC","Role-Based Access Control — grants a principal a role at a scope (authorization)."),
+ ("Azure Policy","Rules that audit or enforce resource configuration for governance."),
+ ("Storage account","A globally-unique namespace holding Blobs, Files, Queues and Tables."),
+ ("SAS token","Shared Access Signature — a scoped, time-limited URL for storage access."),
+ ("ARM / Bicep","Azure Resource Manager templates / the Bicep language for infrastructure as code."),
+ ("VNet","Virtual Network — your private, isolated network in Azure, divided into subnets."),
+ ("NSG","Network Security Group — stateful allow/deny rules filtering subnet or NIC traffic."),
+ ("Azure Bastion","Managed service for browser RDP/SSH to VMs without a public IP."),
+ ("Log Analytics / KQL","Azure Monitor's log store and its Kusto Query Language."),
+ ("Recovery Services vault","The container Azure Backup and Site Recovery use to store recovery points."),
+]
+B.append(("dl",gl))
+
+# ---------------- render Markdown ----------------
+def _anchor(txt):
+    return "".join(ch.lower() if ch.isalnum() else ("-" if ch in " -" else "") for ch in txt)
+
+def render_md():
+    out=[f"# {C.TITLE} — Learner Guide",""]
+    out.append(f"**WSQ Course Code:** {C.COURSE_CODE}  |  **Conducted by:** {C.ORG} ({C.UEN.replace('UEN: ','UEN ')})  |  **Version {C.VERSION} · {C.VERSION_DATE}**")
+    out.append("")
+    # TOC (h1 + h2)
+    out.append("## Contents"); out.append("")
+    for kind,*rest in B:
+        if kind=="h1": out.append(f"- [{rest[0]}](#{_anchor(rest[0])})")
+        elif kind=="h2": out.append(f"  - [{rest[0]}](#{_anchor(rest[0])})")
+    out.append("")
+    for kind,*rest in B:
+        if kind=="h1": out+=["",f"## {rest[0]}",""]
+        elif kind=="h2": out+=["",f"### {rest[0]}",""]
+        elif kind=="h3": out+=[f"**{rest[0]}**",""]
+        elif kind=="p": out+=[rest[0],""]
+        elif kind=="bullets": out+=[f"- {x}" for x in rest[0]]+[""]
+        elif kind=="steps":
+            for i,(instr,cmd) in enumerate(rest[0],1):
+                out.append(f"{i}. {instr}")
+                if cmd: out+=["",f"   ```bash",f"   {cmd}","   ```",""]
+            out.append("")
+        elif kind=="code": out+=["```bash",rest[0],"```",""]
+        elif kind=="note": out+=[f"> **Note:** {rest[0]}",""]
+        elif kind=="rule": out+=["---",""]
+        elif kind=="dl":
+            for term,defn in rest[0]: out.append(f"- **{term}** — {defn}")
+            out.append("")
+    return "\n".join(out)
+
+MD_OUT=os.path.join(REPO,f"LG-{C.SHORT_TITLE}.md")
+with open(MD_OUT,"w") as f: f.write(render_md())
+print("Saved",MD_OUT)
+
+# ---------------- render DOCX ----------------
+BRAND=RGBColor(0x1F,0x6F,0xEB); DARK=RGBColor(0x11,0x18,0x27); GREY=RGBColor(0x55,0x5B,0x66)
+INKCODE=RGBColor(0x0B,0x30,0x60)
 doc=Document()
 normal=doc.styles["Normal"]; normal.font.name="Arial"; normal.font.size=Pt(11)
 prodoc.style_headings(doc)
-prodoc.add_cover_page(doc,"LEARNER GUIDE",C.TITLE,C.DOC_VERSION,
+prodoc.add_cover_page(doc,"LEARNER GUIDE",C.TITLE,C.VERSION.lstrip("v"),
                       org_logo=os.path.join(ASSETS,"tertiary-infotech-logo.png"),
                       course_logo=None, course_code=C.COURSE_CODE)
-prodoc.add_version_control(doc,list(C.VERSION_HISTORY))
+prodoc.add_version_control(doc,[(C.VERSION.lstrip("v"),C.VERSION_DATE,"Initial release — AZ-104 Learner Guide covering all 26 labs.",C.TRAINER)])
 prodoc.add_toc(doc)
 
-def h3(text,color=BRAND):
-    p=doc.add_paragraph(); r=p.add_run(text); r.bold=True; r.font.size=Pt(11); r.font.color.rgb=color
-    return p
+def code_para(text):
+    for line in text.split("\n"):
+        para=doc.add_paragraph(); prodoc._shade_para(para) if hasattr(prodoc,"_shade_para") else None
+        r=para.add_run(line); r.font.name="Consolas"; r.font.size=Pt(9.5); r.font.color.rgb=INKCODE
 
-doc.add_heading("How to Use This Guide",level=1)
-doc.add_paragraph(
-    f"This Learner Guide accompanies the WSQ course {C.TITLE} ({C.COURSE_CODE}), conducted by {C.ORG}. "
-    f"It supports the Skills Framework Technical Skill & Competency “{C.TSC_TITLE}” "
-    f"({C.TSC_CODE}, {C.TSC_LEVEL}) across 4 Learning Units and 17 in-class activities.")
-doc.add_paragraph(
-    "Use this guide alongside the course slides during class, and again during the open-book "
-    "assessment. Each Learning Unit section below lists the key concepts, followed by every "
-    "activity you will complete in class with its scenario, step-by-step instructions and a "
-    "debrief prompt to check your own work. This is a workshop-based course rather than a "
-    "software course, so activities are illustrated with worked templates and examples on the "
-    "slides rather than software screenshots.")
-doc.add_paragraph("Before you start, you will need:")
-for b in ["A notebook or digital document to capture your activity work.",
-          "Internet access to research live brand examples where an activity calls for one.",
-          "The course slides (downloaded from the LMS) for reference during activities and the assessment."]:
-    doc.add_paragraph(b,style="List Bullet")
-
-doc.add_heading("Course Learning Outcomes",level=1)
-for lo in C.LEARNING_OUTCOMES:
-    doc.add_paragraph(lo,style="List Bullet")
-
-doc.add_heading("Skills Framework Reference",level=1)
-for line in [f"TSC Title: {C.TSC_TITLE}", f"TSC Code: {C.TSC_CODE}", f"Proficiency Level: {C.TSC_LEVEL}"]:
-    doc.add_paragraph(line,style="List Bullet")
-
-for t in C.TOPICS:
-    doc.add_heading(f"{t['code']} — {t['title']}",level=1)
-    doc.add_paragraph(t["subtitle"])
-    h3("Key concepts")
-    for c in t["concepts"]:
-        doc.add_paragraph(c,style="List Bullet")
-    for a in [x for x in ACT if x["topic"]==t["num"]]:
-        doc.add_heading(f"Activity {a['num']} — {a['title']}",level=2)
-        doc.add_paragraph(f"Objective: {a['objective']}.")
-        h3("Scenario")
-        doc.add_paragraph(a["desc"])
-        h3("You'll produce")
-        doc.add_paragraph(f"{a['build']}   (Duration: {a['duration']}.)")
-        h3("Step-by-step")
-        # manual numbering so every activity restarts at step 1 (Word's
-        # List Number style would otherwise run 1..71 across all activities)
-        for i,(instr,_cmd) in enumerate(a["steps"],1):
-            p=doc.add_paragraph(); p.paragraph_format.left_indent=Pt(18)
-            r=p.add_run(f"{i}.  "); r.bold=True; r.font.color.rgb=BRAND
-            p.add_run(instr)
-        h3("Debrief it")
-        p=doc.add_paragraph(); r=p.add_run("Check: "); r.bold=True; r.font.color.rgb=BRAND
-        p.add_run(a["test"]).font.size=Pt(10.5)
-        doc.add_paragraph("")
-
-doc.add_heading("Quick Reference — Activities by Learning Unit",level=1)
-tbl=doc.add_table(rows=0,cols=3); tbl.style="Table Grid"
-hdr=tbl.add_row().cells
-for i,htext in enumerate(["Learning Unit","Activity","Duration"]):
-    hdr[i].text=""; r=hdr[i].paragraphs[0].add_run(htext); r.bold=True; r.font.size=Pt(9.5)
-    prodoc._shade_cell(hdr[i],"1F6FEB")
-    r.font.color.rgb=RGBColor(0xFF,0xFF,0xFF)
-for t in C.TOPICS:
-    for a in [x for x in ACT if x["topic"]==t["num"]]:
-        cells=tbl.add_row().cells
-        cells[0].text=""; cells[0].paragraphs[0].add_run(t["code"]).font.size=Pt(9.5)
-        cells[1].text=""; cells[1].paragraphs[0].add_run(f"{a['num']}. {a['title']}").font.size=Pt(9.5)
-        cells[2].text=""; cells[2].paragraphs[0].add_run(a["duration"]).font.size=Pt(9.5)
-
-doc.add_heading("Assessment",level=1)
-for a in [C.ASSESSMENT["written"],C.ASSESSMENT["practical"],
-          "Format: Open Book — this Learner Guide, the course slides and approved materials only.",
-          "Grading: Competent / Not Yet Competent.",C.ASSESSMENT["note"]]:
-    doc.add_paragraph(a,style="List Bullet")
-
-doc.add_heading("Assessment Flow",level=1)
-for i,step in enumerate(["TRAQOM — scan the TRAQOM QR code on the LMS and complete the survey.",
-                          "Assessment Digital Attendance.",
-                          "Assessment (Written Assessment + Case Study).",
-                          "Submit the assessment answers on the LMS.",
-                          "Sign the Assessment Summary Record."],1):
-    doc.add_paragraph(f"{i}. {step}")
-doc.add_paragraph("Courseware and the assessment are on the LMS: https://lms-tms.tertiaryinfotech.com/")
-
-doc.add_heading("Glossary",level=1)
-for term,defn in [
-    ("Brand positioning","The distinct place a brand occupies in the customer's mind relative to competitors."),
-    ("Stakeholder","Any internal or external party with an interest in, or influence over, the brand."),
-    ("Active listening","Giving full attention, applying a structured framework, and paraphrasing without judgement."),
-    ("Brand equity","The commercial value derived from consumer perception of the brand, not the product itself."),
-    ("KPI","Key Performance Indicator — a specific, measurable metric used to judge progress against a goal."),
-    ("AMEC framework","An industry framework for measuring and evaluating PR / communication campaign effectiveness."),
-    ("NPS","Net Promoter Score — a customer-loyalty metric based on likelihood to recommend the brand."),
-    ("TRAQOM","The SSG post-course survey completed via the LMS, distinct from digital attendance."),
-]:
-    p=doc.add_paragraph(style="List Bullet")
-    r=p.add_run(term+" — "); r.bold=True; p.add_run(defn)
-
-doc.add_heading("Support",level=1)
-for line in ["Email: enquiry@tertiaryinfotech.com","Tel: +65 6100 0613","Website: www.tertiarycourses.com.sg",
-             "LMS: https://lms-tms.tertiaryinfotech.com/"]:
-    doc.add_paragraph(line,style="List Bullet")
+for kind,*rest in B:
+    if kind=="h1": doc.add_heading(rest[0],level=1)
+    elif kind=="h2": doc.add_heading(rest[0],level=2)
+    elif kind=="h3":
+        para=doc.add_paragraph(); r=para.add_run(rest[0]); r.bold=True; r.font.size=Pt(11); r.font.color.rgb=BRAND
+    elif kind=="p": doc.add_paragraph(rest[0])
+    elif kind=="bullets":
+        for x in rest[0]: doc.add_paragraph(x,style="List Bullet")
+    elif kind=="steps":
+        for i,(instr,cmd) in enumerate(rest[0],1):
+            para=doc.add_paragraph(style="List Number"); para.add_run(instr)
+            if cmd: code_para(cmd)
+    elif kind=="code": code_para(rest[0])
+    elif kind=="note":
+        para=doc.add_paragraph(); r=para.add_run("Note: "); r.bold=True; r.font.color.rgb=BRAND
+        para.add_run(rest[0]).font.size=Pt(10)
+    elif kind=="rule": doc.add_paragraph("")
+    elif kind=="dl":
+        for term,defn in rest[0]:
+            para=doc.add_paragraph(style="List Bullet")
+            r=para.add_run(term+" — "); r.bold=True; para.add_run(defn)
 
 prodoc.add_page_numbers(doc)
 prodoc.enable_update_fields(doc)

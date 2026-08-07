@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the AZ-104 course slide deck (all-white Tertiary house style).
+"""Generate the CompTIA PenTest+ (PT0-003) course slide deck (all-white Tertiary house style).
 
 Design helpers are the same set used by the tertiary-course-slides skill that
 produced the n8n reference deck (cover, section, content, two_col, cards3,
@@ -23,8 +23,20 @@ from data_domain4 import DOMAIN4
 from data_domain5 import DOMAIN5
 ACTIVITIES = DOMAIN1 + DOMAIN2 + DOMAIN3 + DOMAIN4 + DOMAIN5
 
-REPO = os.path.dirname(os.path.dirname(HERE))
-ASSETS = os.path.join(REPO, "courseware", "assets")
+def _find_repo(start):
+    """Locate the course repo (a dir containing both courseware/ and labs/).
+    Env COURSE_REPO overrides. Keeps the build working wherever the skill lives."""
+    env = os.environ.get("COURSE_REPO")
+    if env and os.path.isdir(env):
+        return env
+    d = start
+    for _ in range(8):
+        d = os.path.dirname(d)
+        if os.path.isdir(os.path.join(d, "courseware")) and os.path.isdir(os.path.join(d, "labs")):
+            return d
+    return os.path.dirname(os.path.dirname(HERE))
+REPO = _find_repo(HERE)
+ASSETS = os.path.join(os.path.dirname(HERE), "assets")   # co-located with the skill
 
 # ---------------- palette (matches reference) ----------------
 BLUE=RGBColor(0x1F,0x6F,0xEB); TEAL=RGBColor(0x10,0xB9,0x81); AMBER=RGBColor(0xF5,0x9E,0x0B)
@@ -89,10 +101,14 @@ def cover():
     rect(s,0,0,SW,Inches(0.22),BLUE); rect(s,0,Inches(7.28),SW,Inches(0.22),TEAL)
     org=_logo("tertiary-infotech-logo.png")
     if org: s.shapes.add_picture(org,Inches(0.85),Inches(0.7),height=Inches(1.05))
-    # course badge (top-right) — Azure blue "AZ-104"
-    rect(s,Inches(11.0),Inches(0.72),Inches(1.55),Inches(1.0),BLUE)
-    txt(s,Inches(11.0),Inches(0.82),Inches(1.55),Inches(0.5),[[("AZ-104",20,WHITE,True)]],align=PP_ALIGN.CENTER)
-    txt(s,Inches(11.0),Inches(1.28),Inches(1.55),Inches(0.4),[[("MICROSOFT AZURE",8,WHITE,True)]],align=PP_ALIGN.CENTER)
+    # course badge (top-right) — official CompTIA PenTest+ Certified badge, else text fallback
+    badge=_logo("comptia-pentest-badge.png")
+    if badge:
+        s.shapes.add_picture(badge,Inches(10.05),Inches(0.6),width=Inches(2.5))
+    else:
+        rect(s,Inches(11.0),Inches(0.72),Inches(1.55),Inches(1.0),BLUE)
+        txt(s,Inches(11.0),Inches(0.82),Inches(1.55),Inches(0.5),[[("PT0-003",18,WHITE,True)]],align=PP_ALIGN.CENTER)
+        txt(s,Inches(11.0),Inches(1.28),Inches(1.55),Inches(0.4),[[("COMPTIA PENTEST+",8,WHITE,True)]],align=PP_ALIGN.CENTER)
     txt(s,Inches(0.9),Inches(2.3),Inches(12),Inches(0.6),[[("COURSE SLIDES  ·  WSQ",16,BLUE,True)]])
     txt(s,Inches(0.9),Inches(2.85),Inches(12.0),Inches(1.9),[[(C.TITLE,40,INK,True)]])
     rect(s,Inches(0.92),Inches(4.75),Inches(2.4),Inches(0.06),TEAL)
@@ -201,7 +217,7 @@ def activity_overview(tag,title,desc,build,services,kicker):
     rect(s,Inches(0.85),Inches(4.3),Inches(11.7),Inches(2.0),LIGHT)
     txt(s,Inches(1.1),Inches(4.5),Inches(11),Inches(0.4),[[("You'll build",14,BLUE,True)]])
     txt(s,Inches(1.1),Inches(4.9),Inches(11),Inches(0.6),[[(build,18,INK,True)]])
-    txt(s,Inches(1.1),Inches(5.6),Inches(11.2),Inches(0.6),[[("Azure services:  ",13,GREY,True),(services,13,GREY,False)]]); footer(s); return s
+    txt(s,Inches(1.1),Inches(5.6),Inches(11.2),Inches(0.6),[[("Tools:  ",13,GREY,True),(services,13,GREY,False)]]); footer(s); return s
 def step_slide(kicker,act_title,n,total,text,cmd=""):
     s=head(slide(),act_title,kicker,TEAL)
     oval(s,Inches(0.85),Inches(2.5),Inches(1.4),Inches(1.4),TEAL)
@@ -240,14 +256,14 @@ trainer_slide("YOUR TRAINER · GENERAL","Your Trainer","General Trainer template
  initials="?",accent=GREY)
 trainer_slide("YOUR TRAINER",C.TRAINER,"Principal Trainer\nTertiary Infotech Academy Pte. Ltd.",
  [("Role","Principal Trainer, Tertiary Infotech Academy Pte. Ltd."),
-  ("Certification","Microsoft Azure certified — cloud infrastructure, DevOps & automation."),
-  ("Delivers","WSQ courses on Azure, cloud administration & software engineering."),
+  ("Certification","Cybersecurity & penetration-testing certified — offensive security and defensive operations."),
+  ("Delivers","WSQ courses on penetration testing, cybersecurity and secure software engineering."),
   ("Founder","Founder and lead instructor at Tertiary Infotech / Tertiary Courses.")],
  initials="AA",accent=BLUE)
 content("Let's Know Each Other",[
  "Your name and organisation / role.",
- "Your experience with Azure or other clouds (if any).",
- "What you want to build or administer on Azure after this course."],kicker="ICE-BREAKER")
+ "Your experience with security, networking or Linux (if any).",
+ "What you want to be able to test or secure after this course."],kicker="ICE-BREAKER")
 tile_grid("Ground Rules",[
  "Set your mobile phone to silent mode.","Participate actively — no question is too small.",
  "Mutual respect: agree to disagree.","One conversation at a time.",
@@ -260,24 +276,24 @@ content("LMS / TMS",[
 # Lesson plan overview
 two_col("Lesson Plan — 3 Days, 8 hours/day",[
  (f"Day 1 — {C.DAY_THEMES[1]}",0),
- ("Topic 1: Identities & Governance (Labs 1–6)",1),
- ("Topic 2: Storage (Labs 7–11)",1),
+ ("Topic 1: Engagement Management (Labs 1–5)",1),
+ ("Topic 2: Recon & Enumeration (Labs 6–14)",1),
  (f"Day 2 — {C.DAY_THEMES[2]}",0),
- ("Topic 3: Compute (Labs 12–17)",1),
- ("Topic 4: Networking begins (Labs 18–19)",1)],
+ ("Topic 3: Vulnerability Analysis (Labs 15–19)",1),
+ ("Topic 4: Attacks & Exploits begin (Labs 20–29)",1)],
  [(f"Day 3 — {C.DAY_THEMES[3]}",0),
- ("Topic 4: Networking (Labs 20–22)",1),
- ("Topic 5: Monitoring & Maintenance (Labs 23–26)",1),
+ ("Topic 4: Attacks & Exploits (Labs 30–32)",1),
+ ("Topic 5: Post-Exploitation (Labs 33–37)",1),
  ("Final Assessment (WA + PP)",1),
  ("Daily timing",0),
  ("9:00am–6:00pm · 1-hour lunch · tea breaks within",1)],
  kicker="SCHEDULE",lhead="Days 1–2",rhead="Day 3 & timing")
 tile_grid("Learning Outcomes",[
- ("Identities & Governance","Entra users/groups, RBAC, Policy, resource groups, locks, tags, cost."),
- ("Storage","Storage accounts, redundancy, access control, Blob, Files, data movement."),
- ("Compute","ARM/Bicep, virtual machines, scale sets, containers, App Service."),
- ("Virtual Networking","VNets, NSGs, Bastion, endpoints, DNS, load balancing."),
- ("Monitor & Maintain","Azure Monitor, Network Watcher, Azure Backup, Site Recovery.")],
+ ("Engagement Management","Scoping, SoW/NDA/RoE, threat modelling, MITRE ATT&CK, CVSS, reporting."),
+ ("Recon & Enumeration","OSINT, DNS/subdomains, Shodan/Censys, Nmap, NSE, web enumeration."),
+ ("Vulnerability Analysis","OpenVAS, Nikto/ZAP, Trivy/Grype, TruffleHog, finding validation."),
+ ("Attacks & Exploits","Metasploit, credential attacks, priv-esc, web, cloud, wireless, social eng."),
+ ("Post-Exploitation","Persistence, lateral movement, pivoting, exfiltration, cleanup.")],
  kicker="WHAT YOU'LL ACHIEVE",cols=2,size=15)
 content("Briefing for Assessment",[
  "Place phones and other materials under the table or on the floor.",
@@ -295,30 +311,44 @@ flow_h("Assessment Flow",[
  "Submit your answers on the LMS",
  "Sign the Assessment Summary Record"],kicker="ON ASSESSMENT DAY")
 
-# ---------------- CORE AZURE CONCEPTS ----------------
-section("CORE CONCEPTS","Azure Fundamentals for Administrators","")
-tile_grid("What is Microsoft Azure?",[
- ("Public cloud","Compute, storage, networking, identity and platform services on demand."),
- ("Pay-as-you-go","Rent capacity instead of buying and running your own hardware."),
- ("Many ways to manage","Azure Portal, Azure CLI, Azure PowerShell and ARM/Bicep templates."),
- ("The AZ-104 role","Implement, manage and monitor an organisation's Azure environment.")],
+# ---------------- CORE PENTEST CONCEPTS ----------------
+section("CORE CONCEPTS","Penetration Testing Fundamentals","")
+tile_grid("What is Penetration Testing?",[
+ ("Authorised attack","A scoped, legal simulation of a real attacker to find exploitable weaknesses."),
+ ("Goal","Prove impact and give the client prioritised, actionable remediation — not just a scan."),
+ ("Authorisation first","A signed Rules of Engagement is what separates a pentest from a crime."),
+ ("The PT0-003 role","Plan, scan, exploit, move laterally and report — end to end.")],
  kicker="OVERVIEW",cols=2,size=15)
-cards3("The Azure Resource Hierarchy",[
- (BLUE,"Top of the tree",["Microsoft Entra tenant (identity)","Management groups","Group many subscriptions"]),
- (TEAL,"Billing & access",["Subscription = billing boundary","Resource groups = lifecycle folder","Delete the RG, delete its contents"]),
- (VIOLET,"Governance flows down",["Policy, RBAC, locks, tags, budgets","Applied at a scope","Inherited by everything below"])],kicker="HIERARCHY")
-big_statement("Everything is a resource in a resource group.","Master the hierarchy — scopes are where identity, governance, cost and access all come together.","WHY IT MATTERS",color=BLUE)
-two_col("Three ways to administer Azure",[
- ("Azure Portal",0),("Visual, discover features and blades",1),("Best when learning a task",1),
- ("Azure CLI (az)",0),("Cross-platform commands in Cloud Shell",1),("Fast, scriptable",1)],
- [("Azure PowerShell (Az)",0),("Cmdlets for Windows-centric teams",1),("Same result as CLI",1),
- ("ARM / Bicep",0),("Infrastructure as code",1),("Repeatable deployments",1)],
- kicker="TOOLING",lhead="Interactive",rhead="Command-line & code")
-content("Azure Cloud Shell",[
- "Browser-based shell at https://shell.azure.com — nothing to install locally.",
- "Pre-loaded with the az CLI, Az PowerShell, azcopy and Bicep.",
- "Bash for az commands; PowerShell for Az cmdlets.",
- "Every lab in this course runs in the Portal and Cloud Shell."],kicker="YOUR WORKBENCH")
+cards3("The Penetration Testing Lifecycle",[
+ (BLUE,"Plan & discover",["Scope, RoE, threat model","Passive & active recon","Enumerate the attack surface"]),
+ (TEAL,"Find & exploit",["Vulnerability discovery","Validate findings","Exploit to gain access"]),
+ (VIOLET,"Deepen & report",["Privilege escalation","Lateral movement & pivoting","Cleanup, then report"])],kicker="METHODOLOGY")
+big_statement("Recon, exploit, escalate, report.","The five PT0-003 domains follow the real attack chain — from a signed scope to a remediation report.","WHY IT MATTERS",color=BLUE)
+two_col("Passive vs active reconnaissance",[
+ ("Passive recon",0),("No packets to the target",1),("OSINT, WHOIS, DNS, Shodan, CT logs",1),
+ ("Low risk of detection",1)],
+ [("Active recon",0),("Directly probes the target",1),("Nmap, NSE, web enumeration",1),
+ ("Must stay within the RoE",1)],
+ kicker="RECON",lhead="Stealthy",rhead="Hands-on")
+content("Your Toolkit — Kali Linux",[
+ "Kali Linux bundles the industry-standard offensive-security toolchain, pre-installed and ready.",
+ "Run it via the Killercoda browser playground, a VM, WSL2 or the Kali Docker image.",
+ "Nmap, Metasploit, Burp Suite, hashcat, Aircrack-ng and hundreds more — install extras with apt.",
+ "Every lab in this course runs on Kali against authorised, isolated practice targets."],kicker="YOUR WORKBENCH")
+tile_grid("Testing Frameworks & Scan Types",[
+ ("Methodologies","PTES (7-phase process), OSSTMM, NIST SP 800-115, CREST — make the engagement systematic and defensible."),
+ ("Web & mobile","OWASP Top 10 + WSTG (web) and MASVS (mobile); MITRE ATT&CK maps actions to real adversary techniques."),
+ ("Threat & OT models","STRIDE / DREAD for threat modelling; the Purdue model structures OT/ICS networks."),
+ ("SAST vs DAST","SAST reads source code (early, more false positives); DAST tests the running app from outside (ZAP, Nikto)."),
+ ("IAST & SCA","IAST instruments the running app; SCA (Trivy, Grype) inventories dependencies and flags known-CVE components."),
+ ("Scan modes","Authenticated vs unauthenticated; extend to IaC and container images for full-stack coverage.")],
+ kicker="METHODOLOGY & SCANNING  ·  OBJ 1.3 / 3.1",cols=2,size=13)
+tile_grid("Specialized Systems & Emerging Targets",[
+ ("Mobile","MobSF, Frida, Drozer, ADB — insecure storage, hardcoded secrets, weak cert pinning, permission abuse; jailbreak/root to bypass controls."),
+ ("IoT / OT / ICS","Fragile, low-auth protocols (Modbus, DNP3, CAN bus); capture, replay and register manipulation — never disrupt safety-critical processes."),
+ ("AI / ML  (new)","Prompt injection (direct/indirect), model manipulation & data poisoning, guardrail bypass, training-data extraction, model supply chain."),
+ ("RF / NFC","Wardriving, RFID/badge cloning, Bluejacking and Bluetooth attacks against physical and wireless entry points.")],
+ kicker="OBJ 4.9 — SPECIALIZED SYSTEMS",cols=2,size=13,accent=VIOLET)
 
 # ---------------- TOPICS + ACTIVITIES ----------------
 TOPIC_ACTS = {t["num"]: [a for a in ACTIVITIES if a["topic"]==t["num"]] for t in C.TOPICS}
@@ -353,21 +383,21 @@ for t in C.TOPICS:
 # ---------------- CLOSE ----------------
 section("WRAP-UP","Course Summary & Next Steps","")
 tile_grid("What You Achieved",[
- ("Identities & Governance","Managed Entra identities, RBAC, Policy, resource groups, locks, tags and cost."),
- ("Storage","Configured storage accounts, redundancy, access control, Blob and Files."),
- ("Compute","Deployed with ARM/Bicep; ran VMs, scale sets, containers and App Service."),
- ("Virtual Networking","Built VNets, NSGs/ASGs, Bastion, endpoints, DNS and load balancing."),
- ("Monitor & Maintain","Used Azure Monitor, Network Watcher, Backup and Site Recovery.")],
+ ("Engagement Management","Scoped engagements with SoW/NDA/RoE, threat models, ATT&CK, CVSS and reports."),
+ ("Recon & Enumeration","Ran OSINT, DNS/subdomain, Shodan/Censys, Nmap, NSE and web enumeration."),
+ ("Vulnerability Analysis","Scanned with OpenVAS, Nikto/ZAP, Trivy/Grype and TruffleHog; validated findings."),
+ ("Attacks & Exploits","Exploited hosts, credentials, web, cloud, wireless and people; escalated privilege."),
+ ("Post-Exploitation","Established persistence, moved laterally, pivoted, exfiltrated and cleaned up.")],
  kicker="LEARNING OUTCOMES",cols=2,size=15)
-content("Preparing for the AZ-104 Exam",[
- "Redo every lab using only the Azure CLI until the commands are automatic.",
+content("Preparing for the PT0-003 Exam",[
+ "Redo every lab from memory until the tool workflow and flags are automatic.",
  "Review the 'What you learned' bullets in each lab and the Learner Guide.",
- "Take the free Microsoft practice assessment for AZ-104.",
- "Passing score is 700/1000; book the exam from your Microsoft Learn profile.",
- "Always run the clean-up step to keep your Azure bill near zero."],kicker="NEXT STEPS")
+ "Practise mapping findings to CVSS scores, CWE weaknesses and MITRE ATT&CK techniques.",
+ "Take the free CompTIA practice assessment for PT0-003.",
+ "Book the exam via a Pearson VUE test centre or online proctoring."],kicker="NEXT STEPS")
 content("Practice Exam",[
- "Sharpen your exam readiness with the Tertiary Infotech AZ-104 practice exam.",
- "Practice exam: https://exams.tertiaryinfotech.com/practice-exams/microsoft/microsoft-az-104",
+ "Sharpen your exam readiness with the Tertiary Infotech PenTest+ practice exam.",
+ "Practice exam: https://exams.tertiaryinfotech.com/practice-exams/comptia/comptia-pentest-plus",
  "Attempt it under timed conditions and review every explanation.",
  "Revisit any lab whose topic you miss, then re-take the practice exam."],kicker="TEST YOURSELF")
 content("Assessment",[
@@ -386,7 +416,7 @@ content("Digital Attendance (Mandatory)",[
  "The trainer/administrator displays the digital attendance QR code from the SSG portal.",
  "Scan the QR code with your mobile phone camera and submit your attendance.",
  "A minimum of 75% attendance is required to be eligible for assessment and funding."],kicker="TRAQOM · SSG DIGITAL ATTENDANCE")
-big_statement("Thank You!","You are now ready to administer Microsoft Azure — and to sit the AZ-104 exam.","SEE YOU IN THE CLOUD",color=TEAL)
+big_statement("Thank You!","You are now ready to plan and run a penetration test — and to sit the CompTIA PenTest+ (PT0-003) exam.","HAPPY (ETHICAL) HACKING",color=TEAL)
 
 OUT=os.path.join(REPO,"courseware",f"{C.SHORT_TITLE}-{C.VERSION}.pptx")
 prs.save(OUT)

@@ -2,15 +2,7 @@
 """Push WSQ courseware + labs DIRECTLY to the user's Google Drive courseware folder via
 rclone, archiving old versions. Upload-and-move only — nothing on Drive is ever deleted.
 
-Usage:  python3 gdrive_push.py [<drive-folder-link-or-id>] [--repo DIR] [--dry-run]
-
-The destination folder: if no link is given it is resolved FROM THE LMS — the course's
-"Courseware Link" field (courseLink / DB courseware_link) on lms-tms.tertiaryinfotech.com,
-looked up by the TGS- course code READ OUT OF THE COURSEWARE ITSELF (deck cover / LG / LP),
-never from the repo folder name. A link passed on the command line always wins, and if it
-disagrees with the LMS the script says so and aborts unless --force-folder is given — a
-renamed or copied repo must never be able to publish one course's material into another
-course's Drive folder.
+Usage:  python3 gdrive_push.py <drive-folder-link-or-id> [--repo DIR] [--dry-run]
 
 Routing (folders matched case-insensitively under the given root; created if missing):
   Master Trainer Slides : slides .pptx + .pdf
@@ -40,95 +32,8 @@ import os
 import re
 import subprocess
 import sys
-import urllib.error
-import urllib.request
-import xml.etree.ElementTree as ET
-import zipfile
 
 REMOTE = os.environ.get("GDRIVE_REMOTE", "gdrive")
-API = os.environ.get("LMS_TMS_API", "https://lms-tms.tertiaryinfotech.com")
-CODE_RE = re.compile(r"\bTGS-\d{6,}\b")
-
-
-# ------------------------------------------- destination folder, resolved from the LMS
-
-def folder_id(link):
-    """Accept a Drive folder URL, an 'open?id=' URL, or a bare id."""
-    if not link:
-        return None
-    m = re.search(r"(?:folders/|[?&]id=)([A-Za-z0-9_-]{10,})", link)
-    return m.group(1) if m else link.strip()
-
-
-def codes_in_docx_or_pptx(path):
-    """Every TGS- course code appearing in an Office file's text (docx/pptx are zipped XML)."""
-    found = set()
-    with zipfile.ZipFile(path) as z:
-        parts = [n for n in z.namelist()
-                 if n.startswith(("word/document", "ppt/slides/slide")) and n.endswith(".xml")]
-        for n in sorted(parts)[:40]:  # cover slides / first pages are enough
-            found |= set(CODE_RE.findall("".join(ET.fromstring(z.read(n)).itertext())))
-    return found
-
-
-def course_code_from_courseware(repo):
-    """Read the course code OUT OF the courseware itself, so a renamed or copied repo can
-    never publish one course's material into another course's Drive folder."""
-    seen, evidence = {}, []
-    for path in sorted(glob.glob(os.path.join(repo, "courseware", "*.pptx"))
-                       + glob.glob(os.path.join(repo, "courseware", "*.docx"))):
-        if os.path.basename(path).startswith("~$"):
-            continue
-        try:
-            codes = codes_in_docx_or_pptx(path)
-        except Exception as e:
-            print(f"  ! could not read {os.path.basename(path)}: {str(e)[:80]}")
-            continue
-        if codes:
-            evidence.append((os.path.basename(path), sorted(codes)))
-            for c in codes:
-                seen[c] = seen.get(c, 0) + 1
-    if not seen:
-        return None, evidence
-    if len(seen) > 1:
-        raise SystemExit("The courseware names MORE THAN ONE course code — refusing to guess "
-                         "which course's Drive folder to push to:\n  " +
-                         "\n  ".join(f"{f}: {', '.join(c)}" for f, c in evidence))
-    return next(iter(seen)), evidence
-
-
-def get_json(url):
-    try:
-        with urllib.request.urlopen(url, timeout=60) as r:
-            return json.loads(r.read())
-    except urllib.error.HTTPError as e:
-        raise SystemExit(f"GET {url} -> {e.code}: {e.read()[:300].decode(errors='replace')}")
-    except urllib.error.URLError as e:
-        raise SystemExit(f"GET {url} failed: {e.reason}")
-
-
-def courseware_link_from_lms(repo):
-    """(link, code, title) from the course's Courseware Link field on LMS-TMS."""
-    code, evidence = course_code_from_courseware(repo)
-    if not code:
-        raise SystemExit(
-            "No TGS- course code found in the courseware (courseware/*.pptx|*.docx), so the "
-            "Drive folder cannot be resolved from the LMS.\nPass the folder link explicitly:\n"
-            "  gdrive_push.py <drive-folder-link> --repo <dir>")
-    print(f"  course code (from {', '.join(f for f, _ in evidence)}): {code}")
-    courses = (get_json(f"{API}/api/courses/list") or {}).get("data", [])
-    hit = next((c for c in courses
-                if (c.get("courseCode") or "").strip().upper() == code.upper()), None)
-    if not hit:
-        raise SystemExit(f"Course code {code} not found in LMS-TMS ({len(courses)} courses listed).")
-    course = (get_json(f"{API}/api/courses/edit-data?courseId={hit['id']}") or {}).get("data", {})
-    link = (course.get("courseLink") or "").strip()
-    if not link:
-        raise SystemExit(
-            f"Course {code} ({hit.get('title','')}) has NO Courseware Link set on LMS-TMS, so "
-            "there is no folder to push to.\nSet the Courseware Link on the course, or pass the "
-            "folder explicitly:\n  gdrive_push.py <drive-folder-link> --repo <dir>")
-    return link, code, hit.get("title", "")
 
 
 def rc(args, root, parse=False, ok_codes=(0,)):
@@ -281,110 +186,24 @@ def push_labs(root, labs_dir, dry):
           f"(unchanged files skipped automatically)")
 
 
-def is_learner_guide(n):
-    """The Learner Guide document, as opposed to the slide-deck PDF that also lives in the
-    Learner Guide folder."""
-    low = n.lower()
-    return bool(re.match(r"^lg[-_ ]", low)) or ("learner guide" in low and "slide" not in low)
-
-
-def print_link_block(root):
-    """Emit the LMS-TMS link block for what is CURRENTLY in the folder (archive/ excluded),
-    ensuring each file is 'anyone with the link can view'. Safe to run on an unchanged push,
-    where nothing was re-uploaded and so no link was printed."""
-    pdf = lambda n: n.lower().endswith(".pdf")
-
-    def files_of(canonical, hint):
-        dirs = list_dirs(root, "")
-        d = (next((x for x in dirs if x["Name"].strip().lower() == canonical.lower()), None)
-             or next((x for x in dirs if hint in x["Name"].strip().lower()), None))
-        if not d:
-            return None, []
-        return d["Name"], rc(["lsjson", f"{REMOTE}:{d['Name']}", "--files-only"], root, parse=True)
-
-    def link_for(folder, f):
-        rc(["link", f"{REMOTE}:{folder}/{f['Name']}"], root)  # creates the reader permission
-        return f"https://drive.google.com/file/d/{f['ID']}/view?usp=sharing"
-
-    def one(canonical, hint, pred, label, prefer=None):
-        folder, files = files_of(canonical, hint)
-        hits = [f for f in files if pred(f["Name"])]
-        if not hits:
-            print(f"{label}: !! MISSING in '{canonical}'")
-            return
-        hits.sort(key=lambda f: (bool(prefer and prefer(f["Name"])), f.get("ModTime", "")), reverse=True)
-        if len(hits) > 1:
-            print(f"  ! {len(hits)} candidates in '{folder}' — using '{hits[0]['Name']}' "
-                  f"(not: {', '.join(h['Name'] for h in hits[1:])})")
-        print(f"{label}: {link_for(folder, hits[0])}   [{hits[0]['Name']}]")
-
-    print("\n--- LMS-TMS link block ---")
-    one("Master Trainer Slides", "master trainer", lambda n: n.lower().endswith(".pptx"),
-        "Trainer Slide — PPT", prefer=lambda n: "master" in n.lower())
-    one("Learner Guide", "learner guide", lambda n: pdf(n) and not is_learner_guide(n),
-        "Learner Slide - PDF (get from LG folder)")
-    one("Learner Guide", "learner guide", lambda n: pdf(n) and is_learner_guide(n), "LG - PDF")
-    one("Lesson Plan", "lesson plan", pdf, "LP - PDF")
-    folder, files = files_of("Assessment", "assess")
-    qp = [f for f in files if f["Name"].lower().endswith(".docx")
-          and not f["Name"].lower().startswith("answer")]
-    if not qp:
-        print("Assessment - DOCX: !! MISSING (no question paper .docx on Drive)")
-    for f in sorted(qp, key=lambda f: f["Name"]):
-        print(f"Assessment - DOCX: {link_for(folder, f)}   [{f['Name']}]")
-
-
 def newest(pattern):
     hits = sorted((h for h in glob.glob(pattern)
                    if not os.path.basename(h).startswith("~$")), key=os.path.getmtime)
     return hits[-1] if hits else None
 
 
-def resolve_root(repo, given, force):
-    """The destination folder id: the LMS Courseware Link, unless a link was passed."""
-    lms_link = lms_id = None
-    try:
-        lms_link, code, title = courseware_link_from_lms(repo)
-        lms_id = folder_id(lms_link)
-        print(f"  LMS Courseware Link ({title or code}): {lms_link}")
-    except SystemExit as e:
-        if not given:
-            raise
-        print(f"  ! could not read the Courseware Link from LMS-TMS — {str(e).splitlines()[0]}")
-
-    if not given:
-        return lms_id
-    given_id = folder_id(given)
-    if lms_id and given_id != lms_id and not force:
-        raise SystemExit(
-            f"The folder you passed is NOT the course's Courseware Link on LMS-TMS:\n"
-            f"  passed: {given_id}\n  LMS:    {lms_id}\n"
-            "Refusing to push one course's material into another course's folder.\n"
-            "Fix the Courseware Link on the course, or re-run with --force-folder if the "
-            "folder you passed is genuinely the right one.")
-    if lms_id and given_id != lms_id:
-        print(f"  ! --force-folder: pushing to {given_id}, NOT the LMS link {lms_id}")
-    return given_id
-
-
 def main():
-    argv = sys.argv[1:]
-    dry = "--dry-run" in argv
-    force = "--force-folder" in argv
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    dry = "--dry-run" in sys.argv
     repo = "."
-    args = [a for a in argv if not a.startswith("--")]
-    if "--repo" in argv:
-        repo = argv[argv.index("--repo") + 1]
+    if "--repo" in sys.argv:
+        repo = sys.argv[sys.argv.index("--repo") + 1]
         args = [a for a in args if a != repo]
-
-    print("Destination:")
-    root = resolve_root(repo, args[0] if args else None, force)
-    if not root:
-        raise SystemExit("No Drive folder to push to.")
-
-    if "--links-only" in argv:
-        print_link_block(root)
-        return
+    if not args:
+        raise SystemExit("Usage: gdrive_push.py <drive-folder-link-or-id> [--repo DIR] [--dry-run]\n"
+                         "The Google Drive courseware folder link MUST be supplied by the user.")
+    m = re.search(r"folders/([A-Za-z0-9_-]{10,})", args[0])
+    root = m.group(1) if m else args[0]
 
     cw = os.path.join(repo, "courseware")
     deck_ppt = newest(os.path.join(cw, "*v[0-9]*.pptx"))
@@ -411,17 +230,12 @@ def main():
         print(f"  {real_name}{' (will be created)' if created else ''}:")
         push_folder(root, folder_path, files, dry)
 
-    labs_dir = next((d for d in (os.path.join(repo, "activities"), os.path.join(repo, "labs"))
-                     if os.path.isdir(d)), None)
-    if labs_dir:
+    labs_dir = os.path.join(repo, "labs")
+    if os.path.isdir(labs_dir):
         push_labs(root, labs_dir, dry)
     else:
-        print("  Activities: no activities/ (or labs/) folder found — skipped")
-    if dry:
-        print("Dry run complete — nothing was modified.")
-        return
-    print("Done.")
-    print_link_block(root)
+        print("  Activities: no labs/ folder found — skipped")
+    print("Done." if not dry else "Dry run complete — nothing was modified.")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 ---
 name: gdrive-push
-description: Push the current WSQ courseware (slides PPT/PDF, Learner Guide, Lesson Plan, assessments) to the user's Google Drive courseware folder, auto-archiving old versions. Use when the user runs /gdrive-push or asks to upload/push courseware to Google Drive. ALWAYS requires the user-supplied Drive folder link.
+description: Push the current WSQ courseware (slides PPT/PDF, Learner Guide, Lesson Plan, assessments) to the course's Google Drive courseware folder — resolved automatically from the course's Courseware Link on lms-tms.tertiaryinfotech.com — auto-archiving old versions, then output a verified link block (Trainer Slide PPT / Learner Slide PDF / LG PDF / LP PDF / Assessment DOCX) for the LMS. Use when the user runs /gdrive-push or asks to upload/push courseware to Google Drive.
 ---
 
 # GDrive Push — WSQ courseware to Google Drive
@@ -9,12 +9,29 @@ Uploads the course's current artifacts into the right subfolders of a Google Dri
 courseware folder, moving all superseded files into an `archive` subfolder first.
 **Upload-only: nothing on Drive is ever deleted.**
 
-## HARD RULE — user input required
+## Where the destination folder comes from — the LMS
 
-**NEVER push without the user-provided Google Drive folder link.** If the user did not
-include the courseware folder link (e.g. `/gdrive-push <link>`), ASK for it first
-(AskUserQuestion) and wait. Do not fall back to a remembered, default, or previously
-used folder. Confirm the link before the first real (non-dry-run) push of a session.
+**No folder link needs to be supplied.** The script reads the course's **Courseware Link**
+field (`courseLink`, DB `courseware_link`) from `lms-tms.tertiaryinfotech.com` via
+`GET /api/courses/edit-data` — the same field `/lms-push` uses — and pushes there.
+
+The lookup is keyed on the **`TGS-` course code read out of the courseware itself** (the
+deck cover / LG / LP text), never the repo folder name, so a renamed or copied repo cannot
+publish one course's material into another course's Drive folder. If the courseware names
+more than one course code, or the course has no Courseware Link set, the script **aborts
+rather than guessing**.
+
+```bash
+python3 <skill-dir>/gdrive_push.py --repo "<course repo>" --dry-run   # folder comes from the LMS
+```
+
+**Overriding the folder.** A link passed as the first argument wins, but if it disagrees
+with the LMS Courseware Link the script aborts and prints both ids; re-run with
+`--force-folder` only if the passed folder is genuinely correct. Use the override when the
+course is not in the LMS yet, or when pushing to a scratch/handover folder.
+
+If the LMS lookup fails and no link was passed, ASK the user for the folder link
+(AskUserQuestion) rather than falling back to a remembered or previously used folder.
 
 ## Routing
 
@@ -38,6 +55,8 @@ old versions, differently-named old decks, Google-native Docs/Slides — is MOVE
 server-side into that folder's `archive/` subfolder. The archive folder is
 **created if absent**, and any existing `Archive`/`archives` variant is **renamed
 to the canonical lowercase `archive`** (case-only renames via a two-step move).
+Any **"old versions"-style folder is MERGED into `archive/`** — its contents are
+moved in server-side and the emptied folder is removed.
 A file that cannot be moved is reported as a WARNING and skipped, never deleted.
 Target subfolders are matched case-insensitively (an existing "Assessments" folder
 is reused, not duplicated).
@@ -46,15 +65,59 @@ Every uploaded file is then set to **"anyone with the link can view"** (via
 `rclone link`, which creates the reader permission) and its view link is printed —
 include the links in the report to the user.
 
+A real push **ends by printing the LMS-TMS link block** for whatever is currently in the
+folder. Emit it on demand (without pushing) with `--links-only` — needed whenever a push
+uploaded nothing because every file was unchanged, since `rclone link` is only printed for
+files that were actually uploaded:
+
+```bash
+python3 -u <skill-dir>/gdrive_push.py --repo "<repo>" --links-only
+```
+
 ## How to run
 
 ```bash
-python3 <this-skill-dir>/gdrive_push.py "<drive-folder-link>" --repo "<course repo>" --dry-run   # preview
-python3 <this-skill-dir>/gdrive_push.py "<drive-folder-link>" --repo "<course repo>"             # real push
+python3 -u <this-skill-dir>/gdrive_push.py --repo "<course repo>" --dry-run   # preview (folder from the LMS)
+python3 -u <this-skill-dir>/gdrive_push.py --repo "<course repo>"             # real push
+python3 -u <this-skill-dir>/gdrive_push.py "<link>" --repo "<repo>" --force-folder   # override the LMS folder
 ```
 
-Always run `--dry-run` first and show the user the plan; then do the real push.
-Report per-folder what was archived and uploaded.
+Always run `--dry-run` first and show the user the plan (including which folder the LMS
+resolved to); then do the real push. Report per-folder what was archived and uploaded.
+
+**Run the real push in the BACKGROUND** (`run_in_background: true`) and use `python3 -u`:
+a full labs sync routinely exceeds the 10-minute foreground Bash timeout, and buffered
+output is lost when the call is killed. The push is checksum-based and upload-only, so a
+killed run is safely resumed by simply re-running it — unchanged files are skipped.
+
+## FINAL STEP — LMS-TMS link block + link check
+
+After the real push, ALWAYS end with an LMS-ready link block for
+`lms-tms.tertiaryinfotech.com`, in EXACTLY this format (one artifact per line,
+its "anyone with the link" view link appended):
+
+```
+Trainer Slide — PPT: <link to the current slides .pptx in Master Trainer Slides>
+Learner Slide - PDF (get from LG folder): <link to the slides .pdf inside the Learner Guide folder>
+LG - PDF: <link to LG-*.pdf>
+LP - PDF: <link to LP-*.pdf>
+Assessment - DOCX: <link(s) to the assessment .docx question papers>
+```
+
+Note the **Learner Slide PDF is the copy in the Learner Guide folder** (not the
+Master Trainer Slides one). These links are what gets pasted into the course page
+on lms-tms.tertiaryinfotech.com.
+
+Then do a **final link check** before reporting done — for every link in the block:
+
+1. Verify it resolves (e.g. `rclone lsjson --drive-root-folder-id ... ` by file id,
+   or fetch the link and confirm it is not a 404/permission page).
+2. Confirm it points to the RIGHT file — correct file name, correct extension
+   (PPT vs PDF vs DOCX), and the CURRENT version (not an archived one).
+3. Confirm sharing is "anyone with the link can view".
+
+Report the check result per link (✓/✗). If any link fails, fix it (re-share or
+re-link the correct file) and re-check before finishing.
 
 ## Transport / prerequisites
 

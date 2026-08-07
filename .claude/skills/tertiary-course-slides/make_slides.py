@@ -9,17 +9,16 @@ from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.enum.shapes import MSO_SHAPE
 
 import os as _os
-import math
 REPO = _os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))))
 
 NAVY=RGBColor(0x0B,0x12,0x20); BLUE=RGBColor(0x1F,0x6F,0xEB); TEAL=RGBColor(0x10,0xB9,0x81)
 AMBER=RGBColor(0xF5,0x9E,0x0B); INK=RGBColor(0x16,0x1B,0x26); GREY=RGBColor(0x5B,0x63,0x72)
 LIGHT=RGBColor(0xF5,0xF8,0xFC); WHITE=RGBColor(0xFF,0xFF,0xFF); LINE=RGBColor(0xE2,0xE8,0xF0)
 VIOLET=RGBColor(0x7C,0x3A,0xED)
-VERSION="v46"; VERSION_DATE="19 July 2026"
+VERSION="v42"; VERSION_DATE="1 July 2026"
 # ─── EDIT PER COURSE ─────────────────────────────────────────────
-TITLE       = "Agentic AI Automation with n8n"   # <<Course Title>>
-COURSE_CODE = "TGS-2023035977"                    # <<Course Code, e.g. TGS-XXXXXXXXXX>>
+TITLE       = "<<Course Title>>"
+COURSE_CODE = "<<Course Code, e.g. TGS-XXXXXXXXXX>>"
 # ─────────────────────────────────────────────────────────────────
 
 prs=Presentation(); prs.slide_width=Inches(13.333); prs.slide_height=Inches(7.5)
@@ -69,8 +68,8 @@ def head(s,title,kicker=None,kcolor=BLUE):
     txt(s,Inches(0.8),y,Inches(12.0),Inches(0.85),[[(title,29,INK,True)]])
     rect(s,Inches(0.8),Inches(1.55),Inches(12.0),Pt(2),LINE)
 
-ASSETS=f"{REPO}/.claude/skills/tertiary-course-slides/assets"
-# Logo lookup: prefer the course's .claude/skills/tertiary-course-slides/assets, else the copies bundled in this skill.
+ASSETS=f"{REPO}/courseware/assets"
+# Logo lookup: prefer the course's courseware/assets, else the copies bundled in this skill.
 _SKILL_ASSETS=_os.path.join(_os.path.dirname(_os.path.abspath(__file__)),"assets")
 def _logo(name):
     for base in (ASSETS,_SKILL_ASSETS):
@@ -92,8 +91,9 @@ def cover():
     rect(s,Inches(0.92),Inches(4.3),Inches(2.4),Inches(0.06),TEAL)
     txt(s,Inches(0.9),Inches(4.65),Inches(12),Inches(1.4),
         [[(f"WSQ Course Code: {COURSE_CODE}",16,GREY,False)],
-         [("Conducted by Tertiary Infotech Academy Pte Ltd  ·  UEN 201200696W",14,GREY,False)],
-         [(f"Version {VERSION}  ·  {VERSION_DATE}",14,BLUE,True)]],space=6)
+         [("Conducted by Tertiary Infotech Academy Pte Ltd  ·  UEN 201200696W",14,GREY,False)]],space=6)
+    txt(s,Inches(0.9),Inches(6.55),Inches(12),Inches(0.4),
+        [[(f"Version {VERSION}  ·  {VERSION_DATE}",12,GREY,False)]])
     txt(s,Inches(0.9),Inches(6.55),Inches(12),Inches(0.34),[[("© 2026 Tertiary Infotech Academy Pte Ltd. All rights reserved.  ·  www.tertiarycourses.com.sg",10,GREY,False)]])
 def section(kicker,title,n,sub=""):
     s=slide(); rect(s,0,0,SW,SH,WHITE)
@@ -206,105 +206,24 @@ content("Digital Attendance (Mandatory)",[
  "The trainer/administrator will display the digital attendance QR code generated from the SSG portal.",
  "Scan the QR code with your mobile phone camera and submit your attendance.",
  "A minimum of 75% attendance is required to be eligible for assessment and funding."],kicker="TRAQOM · SSG DIGITAL ATTENDANCE")
-# --- About the Trainer — ALWAYS two profile-card slides (wsq-slides hard rule):
-#     a blank General Trainer template + the named trainer. Never plain bullets.
-PALETTE=[BLUE,TEAL,VIOLET,AMBER]
-def trainer_slide(kicker,name,role,rows,initials,accent=BLUE):
-    """Profile-card layout: avatar badge + name/role panel on the left, labelled
-    info tiles on the right. rows: list of (LABEL, value); blank value → fill-in line."""
-    s=slide(); head(s,"About the Trainer",kicker=kicker,kcolor=accent)
-    lx=Inches(0.85); lw=Inches(3.65)
-    rect(s,lx,Inches(1.95),lw,Inches(4.7),LIGHT); rect(s,lx,Inches(1.95),lw,Inches(0.12),accent)
-    bd=Inches(1.7); ax=int(lx+(lw-bd)/2)
-    oval(s,ax,Inches(2.5),bd,bd,accent)
-    txt(s,ax,Inches(2.5),bd,bd,[[(initials,44,WHITE,True)]],align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE)
-    txt(s,lx+Inches(0.15),Inches(4.55),lw-Inches(0.3),Inches(0.6),[[(name,21,INK,True)]],align=PP_ALIGN.CENTER)
-    txt(s,lx+Inches(0.15),Inches(5.2),lw-Inches(0.3),Inches(1.2),[[(role,13,GREY,False)]],align=PP_ALIGN.CENTER)
-    rx=Inches(4.9); rw=Inches(7.6); ry=Inches(1.95); rh=Inches(4.7)
-    n=len(rows); gy=Inches(0.2); th=int((rh-gy*(n-1))/n)
-    for i,(label,val) in enumerate(rows):
-        y=int(ry+(th+gy)*i); col=PALETTE[i%len(PALETTE)]
-        rect(s,rx,y,rw,th,LIGHT); rect(s,rx,y,Inches(0.1),th,col)
-        vruns=[(val,14,INK,False)] if val else [("____________________________________________",13,LINE,False)]
-        txt(s,rx+Inches(0.32),y,rw-Inches(0.6),th,
-            [[(label.upper(),11,col,True)],vruns],anchor=MSO_ANCHOR.MIDDLE,space=3)
-    footer(s); return s
-trainer_slide("YOUR TRAINER · GENERAL","Your Trainer","General Trainer template —\nto be completed by the trainer",
- [("Name",""),("Title / Designation",""),("Qualifications",""),
-  ("Areas of expertise",""),("Training & industry experience",""),("Contact","")],
- initials="?",accent=GREY)
-trainer_slide("YOUR TRAINER","Dr. Alfred Ang","Principal Trainer\nTertiary Infotech Academy Pte. Ltd.",
- [("Role","Principal Trainer, Tertiary Infotech Academy Pte. Ltd."),
-  ("Qualifications","PhD — specialises in AI, automation and software engineering."),
-  ("Delivers","WSQ courses on AI agents, automation (n8n) and app development."),
-  ("Founder","Founder and lead instructor at Tertiary Infotech / Tertiary Courses.")],
- initials="AA",accent=BLUE)
-def tile_grid(title,items,kicker=None,cols=2,size=15,icons=None,accent=BLUE):
-    """Grid of light panels, each with a coloured icon/number badge + text (wsq-slides component)."""
-    s=slide(); head(s,title,kicker=kicker,kcolor=accent)
-    n=len(items); rows=math.ceil(n/cols)
-    X0=Inches(0.85); Y0=Inches(1.95); TOTW=Inches(11.63); AREAH=Inches(4.78)
-    gx=Inches(0.3); gy=Inches(0.26)
-    cw=int((TOTW-gx*(cols-1))/cols); ch=int((AREAH-gy*(rows-1))/rows)
-    bd=Inches(0.6)
-    for i,it in enumerate(items):
-        r=i//cols; c=i%cols
-        x=int(X0+(cw+gx)*c); y=int(Y0+(ch+gy)*r); col=PALETTE[i%len(PALETTE)]
-        rect(s,x,y,cw,ch,LIGHT); rect(s,x,y,Inches(0.1),ch,col)
-        oval(s,x+Inches(0.28),int(y+ch/2-bd/2),bd,bd,col)
-        ic=icons[i] if icons else str(i+1)
-        txt(s,x+Inches(0.28),int(y+ch/2-bd/2),bd,bd,[[(ic,19,WHITE,True)]],align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE)
-        tx=x+Inches(1.08); tw=cw-Inches(1.32)
-        txt(s,tx,int(y+Inches(0.1)),tw,int(ch-Inches(0.16)),[[(it,size,INK,False)]],anchor=MSO_ANCHOR.MIDDLE)
-    footer(s); return s
-def flow_h(title,steps,kicker=None,color=BLUE):
-    """Horizontal numbered flow: coloured chips connected by chevrons (wsq-slides component)."""
-    s=slide(); head(s,title,kicker=kicker,kcolor=color)
-    n=len(steps); X0=Inches(0.85); TOTW=Inches(11.63); gap=Inches(0.34)
-    cw=int((TOTW-gap*(n-1))/n); y=Inches(2.55); ch=Inches(3.15); bd=Inches(0.82)
-    for i,st in enumerate(steps):
-        x=int(X0+(cw+gap)*i)
-        rect(s,x,y,cw,ch,LIGHT); rect(s,x,y,cw,Inches(0.1),color)
-        oval(s,int(x+cw/2-bd/2),int(y+Inches(0.42)),bd,bd,color)
-        txt(s,int(x+cw/2-bd/2),int(y+Inches(0.42)),bd,bd,[[(str(i+1),30,WHITE,True)]],align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE)
-        txt(s,x+Inches(0.16),int(y+Inches(1.55)),cw-Inches(0.32),int(ch-Inches(1.7)),[[(st,14,INK,False)]],align=PP_ALIGN.CENTER)
-        if i<n-1:
-            txt(s,int(x+cw-Inches(0.04)),int(y+ch/2-Inches(0.3)),int(gap+Inches(0.08)),Inches(0.6),
-                [[("▶",15,color,True)]],align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE)
-    footer(s); return s
+content("About the Trainer",[
+ "Dr. Alfred Ang — Principal Trainer, Tertiary Infotech Academy Pte. Ltd.",
+ "PhD; specialises in Artificial Intelligence, automation and software engineering.",
+ "Designs and delivers WSQ courses on AI agents, automation (n8n) and app development.",
+ "Founder and lead instructor at Tertiary Infotech / Tertiary Courses."],kicker="YOUR TRAINER")
 content("Let's Know Each Other",[
  "Your name and organisation / role.",
  "Your experience with automation or AI tools (if any).",
  "What you want to automate after this course."],kicker="ICE-BREAKER")
-tile_grid("Ground Rules",[
+content("Ground Rules",[
  "Set your mobile phone to silent mode.","Participate actively — no question is too small.",
  "Mutual respect: agree to disagree.","One conversation at a time.",
- "Be punctual; return from breaks on time.","75% attendance is required."],
- kicker="HOUSEKEEPING",cols=2,size=15)
-website_slide("Download Course Material",
- IMG(".claude/skills/tertiary-course-slides/assets/lms-tms-portal.png"),
- ["Go to lms-tms.tertiaryinfotech.com.",
-  "Enter your registered email and click Send OTP.",
-  "Key in the one-time password from your inbox to log in.",
-  "Open this course to download the slides and Learner Guide.",
-  "Keep them open — the assessment is open book.",
-  "Attendance and assessment submission also happen here."],
- kicker="COURSE PORTAL")
-website_slide("Practice Exam",
- IMG(".claude/skills/tertiary-course-slides/assets/exams-portal.png"),
- ["Go to exams.tertiaryinfotech.com for extra practice.",
-  "Search or browse by vendor — AWS, Microsoft, Cisco, CompTIA and more.",
-  "Try 10 questions free on any exam; Exam Mode is timed, Practice Mode is not.",
-  "Useful if you plan to take an IT certification after this course.",
-  "Practice attempts are not graded and are separate from this course.",
-  "Your graded WA and PP are submitted on the LMS/TMS portal."],
- kicker="REVISION")
-tile_grid("Download the Course Flows (GitHub)",[
- "Open the course repo: github.com/tertiarycourses/TGS-2023035977-Agentic-AI-Automation-with-n8n",
- "Code ▾ → Download ZIP (or git clone) — all workflows are in the labs/ folder.",
- "In n8n: Workflows → Add workflow → ⋯ → Import from File → pick the activity .json.",
- "After importing, re-select YOUR OWN credentials on each node, then Save & Publish."],
- kicker="GET THE WORKFLOWS",cols=1,size=15)
+ "Be punctual; return from breaks on time.","Step out quietly for calls or toilet breaks.",
+ "75% attendance is required."])
+content("LMS / TMS",[
+ "Access your course materials, attendance and assessment on the LMS/TMS portal.",
+ "Portal: https://lms-tms.tertiaryinfotech.com",
+ "Download the slides and Learner Guide for reference during the open-book assessment."],kicker="COURSE PORTAL")
 two_col("Lesson Plan — 3 Days, 8 hours/day",[
  ("Day 1 — Workflow Automation + AI Agents",0),("Topic 1: n8n basics + Activities 1, 2, 3a, 3b",1),
  ("Topic 2: AI Agents — Activities 4a, 4b",1),("Day 2 — Webhooks + API",0),
@@ -314,28 +233,21 @@ two_col("Lesson Plan — 3 Days, 8 hours/day",[
  ("Topic 7: Mini Capstone + presentations",1),("Daily timing",0),
  ("9:30am–6:30pm · 1-hour lunch",1),("Short tea breaks within each day",1)],
  kicker="SCHEDULE",lhead="Days 1–2",rhead="Day 3 & timing")
-tile_grid("Learning Outcomes",[
+content("Learning Outcomes",[
  "LO1: Build automated workflows in n8n using triggers, actions, nodes and flows.",
  "LO2: Design AI agents with LLMs, memory and tools, triggered from chat / Telegram.",
  "LO3: Apply Retrieval-Augmented Generation (RAG) to ground agents in your documents.",
  "LO4: Integrate external systems via webhooks, APIs and HTTP requests.",
- "LO5: Apply human-in-the-loop and guardrails to secure agentic automations."],
- kicker="WHAT YOU'LL ACHIEVE",cols=1,size=15)
+ "LO5: Apply human-in-the-loop and guardrails to secure agentic automations."],kicker="WHAT YOU'LL ACHIEVE")
+content("Assessment",[
+ "Written Assessment (SAQ) — 1 hour.","Practical Performance (PP) — 1 hour.",
+ "Format: Open Book — slides, Learner Guide and approved materials only.",
+ "A mini capstone project is presented on Day 3.","An appeal process is available if required."],kicker="FINAL ASSESSMENT")
 content("Briefing for Assessment",[
  "Place phones and other materials under the table or on the floor.",
  "No photos or recording of assessment scripts.","No discussion during the assessment.",
  "Use a black/blue pen for hard-copy assessments.","No liquid paper / correction tape.",
  "Scripts are collected when time is up."])
-content("Assessment",[
- "Written Assessment (SAQ) — 1 hour.","Practical Performance (PP) — 1 hour.",
- "Format: Open Book — slides, Learner Guide and approved materials only.",
- "A mini capstone project is presented on Day 3.","An appeal process is available if required."],kicker="FINAL ASSESSMENT")
-flow_h("Assessment Flow",[
- "TRAQOM survey — scan the QR code on the LMS",
- "Assessment digital attendance — scan the SSG QR",
- "Sit WA (SAQ) then PP — open book",
- "Submit your answers on the LMS",
- "Sign the Assessment Summary Record"],kicker="ON ASSESSMENT DAY")
 
 # ---------- TOPIC 1: WORKFLOW AUTOMATION ----------
 section("TOPIC 1","Workflow Automation with n8n","01","Triggers · Actions · Nodes · Flows")
@@ -349,7 +261,7 @@ cards3("Features of n8n",[
  (TEAL,"Run anywhere",["Cloud or self-host (Docker)","Webhooks, schedules, queues","Version & export workflows"]),
  (VIOLET,"AI-native",["AI Agent + LangChain nodes","Memory, tools, RAG, MCP","Use any LLM (OpenAI, Gemini...)"])],kicker="FEATURES")
 big_statement("One canvas to connect apps, data and AI.","n8n lets you automate work and build AI agents without gluing code together by hand.","WHY USE n8n",color=BLUE)
-website_slide("n8n.io",IMG(".claude/skills/tertiary-course-slides/assets/site-n8n.png"),
+website_slide("n8n.io",IMG("courseware/assets/site-n8n.png"),
  ["n8n is an open, fair-code workflow automation platform.","Free cloud trial at n8n.io, or self-host with Docker.","Same visual editor in both."],
  kicker="THE PLATFORM")
 content("Why Automate?",[
@@ -362,16 +274,29 @@ content("Setting Up n8n",[
  "Option B — Local Docker Compose (persistent): docker compose up -d → http://localhost:5678.",
  "Trial Data Tables are not permanent — store anything you keep externally (Google Sheets).",
  "See labs/n8n-installation/docker-compose.yml in the course repo."],kicker="GET READY")
-# --- n8n Cloud sign-up ---
-website_slide("Sign Up for n8n Cloud",
- IMG(".claude/skills/tertiary-course-slides/assets/n8n-register.png"),
- ["Go to app.n8n.cloud/register in your browser.",
-  "Enter your company email and click Submit.",
-  "Open the verification email from n8n and click the link to confirm.",
-  "Set your password and complete the short profile questions.",
-  "n8n creates your workspace at <name>.app.n8n.cloud and opens the editor.",
-  "The free trial runs 14 days — no credit card needed."],
- kicker="YOUR LOGIN · CLOUD INSTANCE")
+# --- n8n Cloud Account Login Details ---
+_s=slide(); head(_s,"n8n Account Login Details",kicker="YOUR LOGIN · CLOUD INSTANCE")
+rect(_s,Inches(0.85),Inches(1.85),Inches(11.6),Inches(0.5),RGBColor(0xEB,0xF4,0xFF))
+txt(_s,Inches(1.05),Inches(1.89),Inches(2.2),Inches(0.44),[[("Workspace URL",13,BLUE,True)]],anchor=MSO_ANCHOR.MIDDLE)
+txt(_s,Inches(3.3),Inches(1.89),Inches(9.0),Inches(0.44),[[("http://n8n.srv923061.hstgr.cloud:5678",14,INK,False)]],anchor=MSO_ANCHOR.MIDDLE)
+rect(_s,Inches(0.85),Inches(2.43),Inches(11.6),Inches(0.5),RGBColor(0xEB,0xF4,0xFF))
+txt(_s,Inches(1.05),Inches(2.47),Inches(2.2),Inches(0.44),[[("Password",13,BLUE,True)]],anchor=MSO_ANCHOR.MIDDLE)
+txt(_s,Inches(3.3),Inches(2.47),Inches(3.5),Inches(0.44),[[("Tertiary@888",14,TEAL,True)]],anchor=MSO_ANCHOR.MIDDLE)
+txt(_s,Inches(6.9),Inches(2.47),Inches(4.8),Inches(0.44),[[("(same for all accounts)",12,GREY,False)]],anchor=MSO_ANCHOR.MIDDLE)
+_RH=Inches(0.355); _TY=Inches(3.08)
+for _ci in range(2):
+    _bx=Inches(0.85)+_ci*Inches(6.0); _cw=Inches(5.7); _nw=Inches(0.55)
+    _ew=_cw-_nw-Inches(0.1)
+    rect(_s,_bx,_TY,_cw,_RH,BLUE)
+    txt(_s,_bx+Inches(0.05),_TY,_nw,_RH,[[("No.",11,WHITE,True)]],align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE)
+    txt(_s,_bx+_nw+Inches(0.1),_TY,_ew,_RH,[[("Email",11,WHITE,True)]],anchor=MSO_ANCHOR.MIDDLE)
+    for _ri in range(10):
+        _no=_ci*10+_ri+1; _em=f"n8n{1000+_no:04d}@tertiaryinfotech.com"
+        _ry=_TY+_RH*(_ri+1)
+        rect(_s,_bx,_ry,_cw,_RH,LIGHT if _ri%2==0 else WHITE,line=LINE)
+        txt(_s,_bx+Inches(0.05),_ry,_nw,_RH,[[(str(_no),11,INK,True)]],align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE)
+        txt(_s,_bx+_nw+Inches(0.1),_ry,_ew,_RH,[[(_em,11,INK,False)]],anchor=MSO_ANCHOR.MIDDLE)
+footer(_s)
 content("Credential Setup",[
  "Add credentials once under Credentials → Add credential.",
  "Gmail / Outlook (OAuth2) for email; OpenAI / Gemini for AI.",
@@ -382,7 +307,7 @@ content("The n8n Editor",[
  "Node panel — search 400+ nodes by name.",
  "Execute Workflow — run and inspect data at each step.",
  "Each node shows input and output data as JSON."],kicker="UI TOUR")
-img_slide("The n8n Editor",IMG(".claude/skills/tertiary-course-slides/assets/n8n-editor.png"),
+img_slide("The n8n Editor",IMG("courseware/assets/n8n-editor.png"),
  "n8n canvas: left sidebar navigation · centre canvas · node toolbar · Editor / Executions / Evaluations tabs",
  kicker="UI TOUR")
 two_col("n8n Nodes",[
@@ -401,7 +326,7 @@ two_col("Triggers Available in n8n",[
  ("Email (IMAP) - on new email",0),
  ("App triggers - Gmail, Sheets, Notion, ...",0)],
  kicker="WHEN A WORKFLOW RUNS",lhead="Core triggers",rhead="Chat & app triggers")
-img_slide("Triggers Available in n8n",IMG(".claude/skills/tertiary-course-slides/assets/n8n-triggers.png"),
+img_slide("Triggers Available in n8n",IMG("courseware/assets/n8n-triggers.png"),
  "n8n trigger nodes: Manual · Schedule · WhatsApp · Telegram · Gmail · Chat · Form · Webhook",
  kicker="WHEN A WORKFLOW RUNS")
 two_col("Key Nodes in n8n",[
@@ -416,7 +341,7 @@ two_col("Key Nodes in n8n",[
  ("Vector Store - RAG retrieval",0),
  ("Respond to Webhook - reply to caller",0)],
  kicker="THE WORKHORSE NODES",lhead="Actions",rhead="Logic & AI")
-img_slide("Key Nodes in n8n",IMG(".claude/skills/tertiary-course-slides/assets/n8n-key-nodes.png"),
+img_slide("Key Nodes in n8n",IMG("courseware/assets/n8n-key-nodes.png"),
  "If · Switch · Filter · Edit Fields · Split Out · Aggregate · Merge · Loop · Date & Time · Execute Workflow · Wait · Code",
  kicker="THE WORKHORSE NODES")
 content("Triggers and Actions",[
@@ -446,7 +371,7 @@ content("Pin Data & Execution History",[
  "Pin data to freeze a node's output while you build downstream nodes.",
  "Edit output to test different scenarios without re-running triggers.",
  "Execution History shows every run, its data, and any errors."],kicker="DEBUGGING")
-img_slide("Pin Data & Execution History",IMG(".claude/skills/tertiary-course-slides/assets/n8n-execution-history.png"),
+img_slide("Pin Data & Execution History",IMG("courseware/assets/n8n-execution-history.png"),
  "Execution History tab — each run shows status, duration, ID and the full data at every node",
  kicker="DEBUGGING")
 content("Transforming Data",[
@@ -599,7 +524,7 @@ content("What is a Webhook?",[
  "A Webhook is a URL that external systems call to trigger your workflow.",
  "Use cases: website chat, form submissions, payments, app notifications.",
  "Pair the Webhook trigger with a Respond to Webhook node to reply."],kicker="CONCEPT")
-img_slide("What is a Webhook?",IMG(".claude/skills/tertiary-course-slides/assets/n8n-webhook.png"),
+img_slide("What is a Webhook?",IMG("courseware/assets/n8n-webhook.png"),
  "Webhook node starts the workflow when called · Respond to Webhook node returns data back to the caller",
  kicker="CONCEPT")
 content("How a Webhook Works",[
@@ -679,13 +604,13 @@ content("HTTP Request Node",[
  "Configure method, URL, headers and query parameters.",
  "Store API keys in credentials, never hard-coded.",
  "Parse the JSON response and pass fields to the next node."],kicker="IN n8n")
-img_slide("HTTP Request Node",IMG(".claude/skills/tertiary-course-slides/assets/n8n-http-request.png"),
+img_slide("HTTP Request Node",IMG("courseware/assets/n8n-http-request.png"),
  "HTTP Request node — makes an HTTP request and returns the response data",
  kicker="IN n8n")
 K5="TOPIC 4 · API & HTTP"
-website_slide("Twelve Data",IMG(".claude/skills/tertiary-course-slides/assets/site-twelvedata.png"),
+website_slide("Twelve Data",IMG("courseware/assets/site-twelvedata.png"),
  ["Twelve Data provides live stock / forex / crypto market data.","Sign up (free Basic plan), then Account -> API Keys.","Paste the apikey into the 3 'candles' HTTP nodes."],kicker="MARKET DATA API")
-website_slide("NewsAPI",IMG(".claude/skills/tertiary-course-slides/assets/site-newsapi.png"),
+website_slide("NewsAPI",IMG("courseware/assets/site-newsapi.png"),
  ["NewsAPI returns recent news articles for a search query.","Register (free Developer plan) and copy your API key.","Store it as a Query Auth credential (name = apiKey) on the news node."],kicker="NEWS API")
 activity_block(dict(tag="ACT 6",title="Activity 6 — Finance API → Telegram (AI Day-Trading Agent)",kicker=K5,
  desc="Ask the Telegram bot about a stock; it resolves the ticker, pulls candles from Twelve Data and headlines from NewsAPI, and replies with a Buy/Sell/Hold call and reasoning.",
@@ -730,7 +655,7 @@ content("Vector Database",[
  "Vectors are stored in a vector store (in-memory, Pinecone, etc.).",
  "At query time, the question is embedded and the closest chunks are retrieved.",
  "Those chunks are given to the LLM as context to answer."],kicker="VECTOR STORE")
-img_slide("How RAG Works",IMG(".claude/skills/tertiary-course-slides/assets/rag-flow.png"),
+img_slide("How RAG Works",IMG("courseware/assets/rag-flow.png"),
           "User → Prompt → Data Retrieval (search/retrieve over your data sources) → Generator → Response",
           kicker="TOPIC 5 · RAG")
 K3="TOPIC 5 · RAG"
@@ -763,24 +688,24 @@ cards3("Three Vector Databases",[
  (TEAL,"Supabase (pgvector)",["Postgres + vector extension","SQL table + match function","Self-host or hosted; great if you already use Postgres"]),
  (BLUE,"Pinecone",["Fully managed SaaS","Just create an index (no schema)","Zero-ops, serverless, scales fast"]),
  (VIOLET,"Qdrant",["Open-source vector DB","Run via Docker or Qdrant Cloud","Full control / self-hosted"])],kicker="ACT 7b · CHOOSE ONE")
-content("Embedding Model Sets the Dimension",[
- "Supabase & Qdrant flows embed with OpenAI text-embedding-3-small → 1536-dim vectors.",
- "The Pinecone flow & CX Agent embed with Google Gemini gemini-embedding-001 → 3072-dim.",
- "The store's dimension MUST equal the embedding model's output dimension.",
+content("One Embedding Model, One Dimension",[
+ "All three stores ingest the same 20 brochures using OpenAI text-embedding-3-small.",
+ "That model outputs 1536-dimension vectors — the store's dimension MUST equal 1536.",
+ "Change the embedding model and the dimension changes too (e.g. -3-large = 3072).",
  "Mismatched dimensions are the #1 cause of failed inserts."],kicker="DIMENSION RULE")
-website_slide("Pinecone — Example Managed Store",IMG(".claude/skills/tertiary-course-slides/assets/site-pinecone.png"),
- ["Pinecone is a managed (cloud) vector database for RAG.","Free 'Starter' tier is enough for this lab.","Create an index: Dimensions = 3072 (Gemini), Metric = cosine."],
+website_slide("Pinecone — Example Managed Store",IMG("courseware/assets/site-pinecone.png"),
+ ["Pinecone is a managed (cloud) vector database for RAG.","Free 'Starter' tier is enough for this lab.","Create an index: Dimensions = 1536, Metric = cosine."],
  kicker="VECTOR DATABASE")
 
 # ===== Activity 7b — Customer-support RAG agent for a training center =====
 activity_overview("ACT 7b","Activity 7b — Customer-Support RAG Agent (Cook & Bake Academy)",
  "A cooking & bakery training center's website has a support chatbot. Ingest 20 course brochures from Google Drive into a vector database, then a CX Agent answers visitor questions about course duration, fees, location and schedule — grounded in the brochures.",
- "Manual Trigger → Drive (list+download) → Split → Embeddings → Vector Store   |   Website → Webhook (POST) → AI Agent + retriever tool → Respond to Webhook",
- "manualTrigger, googleDrive, textSplitter, embeddings (OpenAI/Gemini), vectorStore (Supabase/Pinecone/Qdrant), agent, lmChatGoogleGemini, webhook, respondToWebhook",kicker=K3)
+ "Manual Trigger → Drive (list+download) → Split → Embeddings (OpenAI) → Vector Store   |   Website → Webhook → AI Agent + retriever → reply",
+ "manualTrigger, googleDrive, textSplitter, embeddingsOpenAi, vectorStore (Supabase/Pinecone/Qdrant), agent, webhook, respondToWebhook",kicker=K3)
 img_slide("Activity 7b — Ingestion Workflow",IMG("labs/activity7-rag/Activity7b-Pinecone-Upload.png"),
- "Ingestion pattern (shown: Pinecone) — list & download brochures → whole-brochure split (1 brochure = 1 chunk) → embed (Gemini 3072-d) → upsert. Supabase & Qdrant use OpenAI 1536-d.",kicker=K3)
+ "Ingestion pattern (shown: Pinecone) — list & download brochures → split → embed (OpenAI 1536-d) → upsert. Same flow for Supabase & Qdrant.",kicker=K3)
 img_slide("Activity 7b — CX Agent Workflow",IMG("labs/activity7-rag/Activity7b-CX-Agent.png"),
- "The answering agent: website webhook (POST) → AI Agent with Pinecone retriever tool + Gemini chat model → respond to the chat widget",kicker=K3)
+ "The answering agent: website webhook → retrieve from the vector store → respond to the chat widget",kicker=K3)
 website_slide("Cook & Bake Academy — Support Chatbot",IMG("labs/activity7-rag/Activity7b-website.png"),
  ["A one-page training-center site with a floating chat widget.",
   "Visitors ask about any course — duration, fee, location, schedule.",
@@ -788,14 +713,14 @@ website_slide("Cook & Bake Academy — Support Chatbot",IMG("labs/activity7-rag/
   "Set WEBHOOK_URL in script.js to your n8n CX Agent URL."],kicker="ACT 7b · THE WEBSITE")
 for i,t in enumerate([
  "Upload the 20 course brochures (labs/activity7-rag/brochures/) to a Google Drive folder named 'Course Brochures'; copy the folder ID from the URL.",
- "Choose one vector database — Supabase, Pinecone or Qdrant. Supabase/Qdrant use OpenAI text-embedding-3-small (1536-dim); Pinecone uses Google Gemini gemini-embedding-001 (3072-dim).",
+ "Choose one vector database — Supabase, Pinecone or Qdrant. All use OpenAI text-embedding-3-small (1536-dim); the store must match 1536.",
  "Supabase: create a project, enable pgvector, run the SQL to create the documents table + match_documents function, then add a Supabase credential.",
- "Pinecone: create an index 'course-brochures' (Dimensions = 3072, Metric = cosine); add Pinecone + Google Gemini credentials. Upload & retrieval must use the SAME namespace (both default).",
+ "Pinecone: create an index 'course-brochures' (Dimensions = 1536, Metric = cosine); add a Pinecone credential.",
  "Qdrant: create a cluster (Qdrant Cloud) or run via Docker; create collection 'course-brochures' (size 1536, Cosine); add a Qdrant credential.",
- "Import the matching ingestion workflow (Activity7b-Supabase / Pinecone / Qdrant-Upload.json). Set the Drive folder ID on 'List Brochures in Folder' and your Drive + embeddings + DB credentials.",
- "Click Execute workflow. Pinecone keeps 1 brochure = 1 chunk (similar brochures confuse retrieval if split) → exactly 20 vectors; Supabase/Qdrant upsert ~30–60 chunks.",
- "Import Activity7b-CX-Agent.json. Point its Pinecone retriever tool at the same 'course-brochures' index — same Gemini embeddings (3072-dim) and same (default) namespace.",
- "Activate and copy the Webhook production URL (the webhook accepts POST and replies via Respond to Webhook). Set WEBHOOK_URL in website/script.js to it.",
+ "Import the matching ingestion workflow (Activity7b-Supabase / Pinecone / Qdrant-Upload.json). Set the Drive folder ID on 'List Brochures in Folder' and your OpenAI + Drive + DB credentials.",
+ "Click Execute workflow — it lists, downloads, splits, embeds and upserts ~30–60 vectors. Verify the rows / vectors appear in your DB.",
+ "Import Activity7b-CX-Agent.json. Point its retriever vector-store node at the same store you ingested into (same 1536-dim embeddings); add OpenAI + DB credentials.",
+ "Activate and copy the Webhook production URL. Set WEBHOOK_URL in website/script.js to it.",
  "Open website/index.html, click the 💬 chat button, and ask 'How much is the sourdough course?'"],1):
     step_slide(K3,"Activity 7b — Customer-Support RAG Agent (Cook & Bake Academy)",i,10,t)
 test_slide("Activity 7b — Customer-Support RAG Agent (Cook & Bake Academy)","On the website chat widget ask 'How long is the French Pastry course?' or 'Where are you located?' — the chatbot answers grounded in the brochures retrieved from your vector database.",K3)
@@ -803,7 +728,7 @@ content("Vector Databases — Quick Comparison",[
  "Supabase (pgvector): Postgres + extension · SQL table & function · self-host or hosted · best if you already use Postgres.",
  "Pinecone: managed SaaS · just create an index · zero-ops · scales fast.",
  "Qdrant: open-source · Docker or Qdrant Cloud · full control / self-hosted.",
- "Match the store's dimension to the embedding model (OpenAI 1536 / Gemini 3072) — swap the store, keep the RAG flow."],kicker="ACT 7b · RECAP")
+ "All three store the same 1536-dim OpenAI embeddings — swap the store, keep the RAG flow."],kicker="ACT 7b · RECAP")
 brk("Lunch Break","1 hour",AMBER)
 
 # ---------- TOPIC 6: SECURITY ----------
@@ -871,24 +796,6 @@ content("Presentation & Assessment",[
  "Written Assessment (SAQ) — 1 hour · Practical Performance (PP) — 1 hour.",
  "Open book: slides, Learner Guide and approved materials.",
  "Remember to take the Assessment digital attendance (TRAQOM)."],kicker="WRAP-UP")
-
-# ---------- ASSESSMENT ADMIN (repeated at END before Thank You — wsq-slides hard rule) ----------
-content("Assessment",[
- "Written Assessment (SAQ) — 1 hour.  Practical Performance (PP) — 1 hour.",
- "Open book: slides, Learner Guide and approved materials only.",
- "Remember to take the Assessment digital attendance (TRAQOM).",
- "Submit your completed answers on the LMS at https://lms-tms.tertiaryinfotech.com/."],kicker="WRAP-UP")
-flow_h("Assessment Flow",[
- "TRAQOM survey — scan the QR code on the LMS",
- "Assessment digital attendance — scan the SSG QR",
- "Sit WA (SAQ) then PP — open book",
- "Submit your answers on the LMS",
- "Sign the Assessment Summary Record"],kicker="ON ASSESSMENT DAY")
-content("Digital Attendance (Mandatory)",[
- "It is mandatory to take the AM, PM and Assessment digital attendance for WSQ-funded courses.",
- "The trainer/administrator displays the digital attendance QR code from the SSG portal.",
- "Scan the QR code with your mobile phone camera and submit your attendance.",
- "A minimum of 75% attendance is required to be eligible for assessment and funding."],kicker="TRAQOM · SSG DIGITAL ATTENDANCE")
 
 # ---------- CLOSING ----------
 s=slide(); rect(s,0,0,SW,SH,WHITE); rect(s,0,0,Inches(0.28),SH,BLUE)

@@ -40,4 +40,4 @@ Save your output — it forms part of your LU4 workbook, which you may draw on f
 
 ---
 
-*Customer-Centric Branding and Communication Tactics · TGS-2026061321 · Version v1 · © 2026 Tertiary Infotech Academy Pte Ltd*
+*Customer-Centric Branding and Communication Tactics · TGS-2026061321 · Version v3 · © 2026 Tertiary Infotech Academy Pte Ltd*

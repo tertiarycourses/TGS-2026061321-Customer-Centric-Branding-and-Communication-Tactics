@@ -7,6 +7,8 @@ description: >
   field, the day schedule table, and the assessment scheduling rules.
 ---
 
+> **Key principle:** The course material must be **100% aligned to the exam/skills domains** so that students who take the course can pass the exam.
+
 # WSQ Lesson Plan Skill
 
 > **Scope:** This skill (with `wsq-slides` and `wsq-learner-guide`) applies to **all**
