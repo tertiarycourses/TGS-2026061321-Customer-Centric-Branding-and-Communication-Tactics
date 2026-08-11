@@ -71,10 +71,35 @@ doc=Document()
 normal=doc.styles["Normal"]; normal.font.name="Arial"; normal.font.size=Pt(11)
 prodoc.style_headings(doc)
 
-prodoc.add_cover_page(doc,"LESSON PLAN",C.TITLE,C.DOC_VERSION,
+prodoc.add_cover_page(doc,"LESSON PLAN",C.TITLE,C.LP_VERSION,
                       org_logo=os.path.join(ASSETS,"tertiary-infotech-logo.png"),
                       course_logo=None, course_code=C.COURSE_CODE)
-prodoc.add_version_control(doc,[(C.DOC_VERSION,C.VERSION_DATE,"First version.",C.ORG)])
+prodoc.add_version_control(doc,[
+    ("1.0","20 July 2026","First version.",C.ORG),
+    ("2.0","4 August 2026",
+     "Converted in-class activities to case-study/role-play format (scenario, roles, discussion "
+     "prompts, reflection points); no schedule/timing changes.",C.ORG),
+    ("2.1","5 August 2026",
+     "Refreshed slide-number citations throughout to align with courseware deck v4 (245 slides, "
+     "expanded diagram library); no content or schedule change.",C.ORG),
+    ("2.2","6 August 2026",
+     "Courseware deck regenerated as v5: AI-rendered infographic visuals (AntV engine) replace "
+     "native diagrams across most What-is/How-it-works/Compare theory slots in all 4 Learning "
+     "Units for a more visual, less text-heavy deck. Slide count and page numbers unchanged "
+     "(245 slides); no schedule or LP content change.",C.ORG),
+    ("2.3","7 August 2026",
+     "Courseware deck regenerated as v6: trimmed the per-activity Reference Table, Why-It-Matters "
+     "statement and Key-Takeaways recap slides, and the per-topic activity-preview slide, to bring "
+     "total slide count down from 245 to roughly 190 for better 2-day pacing. Core theory (What is / "
+     "How it Works / Compare / Supporting Data), all case-study examples, and all activity slides "
+     "(scenario, roles, discussion, reflection) are unchanged. Page-number citations below refreshed "
+     "to match; no change to schedule or activity content.",C.ORG),
+    (C.LP_VERSION,C.VERSION_DATE,
+     "Courseware deck regenerated as v7: replaced the five dark-navy full-bleed 'impact' slides "
+     "(the four LU closing-thought quotes and the course wrap-up playbook) and all 17 K/A sub-topic "
+     "divider slides with the deck's standard white-background house design, for full visual "
+     "consistency across the deck. Slide count, content and schedule unchanged.",C.ORG),
+])
 prodoc.add_toc(doc)
 
 def H(text,level=1):
@@ -154,7 +179,7 @@ for tp in C.TOPICS:
         act_key=f"activity{a['num']}"
         H(f"Activity {a['num']} — {a['title']} · {slides_for(act_key)}",3)
         doc.add_paragraph(f"Objective: {a['objective']}.")
-        doc.add_paragraph(f"Scenario: {a['desc']}")
+        doc.add_paragraph(f"Scenario: {' '.join(a['case_scenario'])}")
         doc.add_paragraph(f"Duration: {a['duration']}.")
 
 H("Resources Required",1)

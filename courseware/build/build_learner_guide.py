@@ -5,10 +5,11 @@ kept in the repo (wsq-learner-guide HARD RULE 1).
 
 House format: cover page, Document Version Control Record, auto TOC, Arial
 11pt body, one section per Learning Unit with concepts, then one subsection
-per activity (Objective · Scenario · Step-by-step · Debrief), a Quick
-Reference table, Support section and the assessment flow. All content is
-driven by course_data + the domain data files, keeping the LG 100% aligned
-with the slide deck and Lesson Plan.
+per activity (Objective · Scenario · Roles (role-play only) · Discussion &
+Decision Prompts · Reflect & Discuss · Debrief), a Quick Reference table,
+Support section and the assessment flow. All content is driven by
+course_data + the domain data files, keeping the LG 100% aligned with the
+slide deck and Lesson Plan.
 """
 import os, sys
 from docx import Document
@@ -28,10 +29,16 @@ BRAND=RGBColor(0x1F,0x6F,0xEB); DARK=RGBColor(0x11,0x18,0x27); GREY=RGBColor(0x5
 doc=Document()
 normal=doc.styles["Normal"]; normal.font.name="Arial"; normal.font.size=Pt(11)
 prodoc.style_headings(doc)
-prodoc.add_cover_page(doc,"LEARNER GUIDE",C.TITLE,C.DOC_VERSION,
+prodoc.add_cover_page(doc,"LEARNER GUIDE",C.TITLE,C.LG_VERSION,
                       org_logo=os.path.join(ASSETS,"tertiary-infotech-logo.png"),
                       course_logo=None, course_code=C.COURSE_CODE)
-prodoc.add_version_control(doc,[(C.DOC_VERSION,C.VERSION_DATE,"First version.",C.ORG)])
+prodoc.add_version_control(doc,[
+    ("1.0","20 July 2026","First version.",C.ORG),
+    (C.LG_VERSION,"4 August 2026",
+     "Converted in-class activities to case-study/role-play format (scenario, roles, discussion "
+     "prompts, reflection points) with a richer supporting-visual set; content realigned to a "
+     "single continuous Nimbus Wellness scenario matching the Case Study assessment.",C.ORG),
+])
 prodoc.add_toc(doc)
 
 def h3(text,color=BRAND):
@@ -46,10 +53,10 @@ doc.add_paragraph(
 doc.add_paragraph(
     "Use this guide alongside the course slides during class, and again during the open-book "
     "assessment. Each Learning Unit section below lists the key concepts, followed by every "
-    "activity you will complete in class with its scenario, step-by-step instructions and a "
-    "debrief prompt to check your own work. This is a workshop-based course rather than a "
-    "software course, so activities are illustrated with worked templates and examples on the "
-    "slides rather than software screenshots.")
+    "activity you will complete in class as a case study or role play — its scenario, discussion "
+    "and decision prompts, and a debrief check — rather than a numbered instruction list. This is "
+    "a workshop-based course rather than a software course, so activities are illustrated with "
+    "worked templates and examples on the slides rather than software screenshots.")
 doc.add_paragraph("Before you start, you will need:")
 for b in ["A notebook or digital document to capture your activity work.",
           "Internet access to research live brand examples where an activity calls for one.",
@@ -71,18 +78,32 @@ for t in C.TOPICS:
     for c in t["concepts"]:
         doc.add_paragraph(c,style="List Bullet")
     for a in [x for x in ACT if x["topic"]==t["num"]]:
-        doc.add_heading(f"Activity {a['num']} — {a['title']}",level=2)
+        act_type="Role Play" if a.get("case_type")=="role_play" else "Case Study"
+        doc.add_heading(f"Activity {a['num']} — {a['title']}  ({act_type})",level=2)
         doc.add_paragraph(f"Objective: {a['objective']}.")
         h3("Scenario")
-        doc.add_paragraph(a["desc"])
+        for para in a["case_scenario"]:
+            doc.add_paragraph(para)
         h3("You'll produce")
         doc.add_paragraph(f"{a['build']}   (Duration: {a['duration']}.)")
-        h3("Step-by-step")
-        for i,(instr,_cmd) in enumerate(a["steps"],1):
-            p=doc.add_paragraph(style="List Number"); p.add_run(instr)
+        if a.get("roles"):
+            h3("Roles")
+            doc.add_paragraph("Assign one role per participant (or per small group):")
+            for name,goal,brief in a["roles"]:
+                p=doc.add_paragraph(style="List Bullet")
+                r=p.add_run(f"{name} — "); r.bold=True
+                r2=p.add_run(f"Goal: {goal}. "); r2.italic=True
+                p.add_run(brief)
+        h3("Discussion & Decision Prompts")
+        doc.add_paragraph("Work through these together — there is no single correct order to follow:")
+        for prompt in a["discussion_prompts"]:
+            p=doc.add_paragraph(style="List Number"); p.add_run(prompt)
+        h3("Reflect & Discuss")
+        for point in a["reflection_points"]:
+            p=doc.add_paragraph(style="List Bullet"); p.add_run(point)
         h3("Debrief it")
         p=doc.add_paragraph(); r=p.add_run("Check: "); r.bold=True; r.font.color.rgb=BRAND
-        p.add_run(a["test"]).font.size=Pt(10.5)
+        p.add_run(a["debrief_check"]).font.size=Pt(10.5)
         doc.add_paragraph("")
 
 doc.add_heading("Quick Reference — Activities by Learning Unit",level=1)

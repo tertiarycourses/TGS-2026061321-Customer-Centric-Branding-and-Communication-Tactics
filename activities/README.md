@@ -1,0 +1,38 @@
+# Customer-Centric Branding and Communication Tactics Activities
+
+This course structure organises 17 progressive in-class activities across 4 Learning Units, where participants apply each Learning Unit's concepts to a running set of branding and communication exercises that build into an open-book Case Study assessment on Day 2.
+
+## Course Structure
+
+The activities span four Learning Units:
+
+- **LU1 — Stakeholders and Organisation (Activities 1-4):** Internal & External Stakeholders · Audience Types · Brand Design · Reputation Assessment
+- **LU2 — Customer Influence (Activities 5-8):** Customer Perceptions · Brand Reputation · Campaign Reception · Active Listening
+- **LU3 — Branding in Marketing (Activities 9-12):** Branding Basics · Role in Marketing · Awareness Campaigns · PR Execution
+- **LU4 — Branding Effectiveness (Activities 13-17):** Reputation Metrics · Success Indicators · PR Tactics · KPI Monitoring · Continuous Improvement
+
+## Key Features
+
+Every activity is a case study or role play — never a numbered instruction list — built on one continuous scenario (Nimbus Wellness Pte Ltd) and produces a concrete artifact (a matrix, plan, audit report or dashboard) that the learner keeps. Each closes with open discussion prompts and reflection points instead of a pass/fail check. All 17 activities are in-class activities assessed indirectly through the Case Study (CS) component of the formal WSQ assessment, which reuses the same techniques on the same continuous scenario.
+
+## Activities
+
+| # | Learning Unit | Activity | Type | Duration |
+|---|---|---|---|---|
+| 1 | LU1 | [Stakeholder Influence Mapping](activity-01-stakeholder-influence-mapping.md) | Role Play | 25 minutes |
+| 2 | LU1 | [Audience Mapping Workshop](activity-02-audience-mapping-workshop.md) | Case Study | 25 minutes |
+| 3 | LU1 | [Brand Attribute Mapping](activity-03-brand-attribute-mapping.md) | Case Study | 30 minutes |
+| 4 | LU1 | [Digital Reputation Audit Exercise](activity-04-digital-reputation-audit-exercise.md) | Case Study | 45 minutes |
+| 5 | LU2 | [Brand Perception Audit](activity-05-brand-perception-audit.md) | Case Study | 25 minutes |
+| 6 | LU2 | [Brand Advocacy Assessment](activity-06-brand-advocacy-assessment.md) | Case Study | 25 minutes |
+| 7 | LU2 | [Campaign Documentation Audit](activity-07-campaign-documentation-audit.md) | Case Study | 25 minutes |
+| 8 | LU2 | [Customer Perspective Analysis](activity-08-customer-perspective-analysis.md) | Role Play | 25 minutes |
+| 9 | LU3 | [Brand Audit Workshop](activity-09-brand-audit-workshop.md) | Case Study | 30 minutes |
+| 10 | LU3 | [Brand-Marketing Audit Exercise](activity-10-brand-marketing-audit-exercise.md) | Case Study | 20 minutes |
+| 11 | LU3 | [Brand Activation Planning Workshop](activity-11-brand-activation-planning-workshop.md) | Case Study | 30 minutes |
+| 12 | LU3 | [PR Campaign Budget Planning](activity-12-pr-campaign-budget-planning.md) | Case Study | 25 minutes |
+| 13 | LU4 | [Platform Reputation Audit](activity-13-platform-reputation-audit.md) | Case Study | 20 minutes |
+| 14 | LU4 | [Brand Health Assessment](activity-14-brand-health-assessment.md) | Case Study | 25 minutes |
+| 15 | LU4 | [PR Crisis Response Plan](activity-15-pr-crisis-response-plan.md) | Role Play | 25 minutes |
+| 16 | LU4 | [KPI Dashboard Design](activity-16-kpi-dashboard-design.md) | Case Study | 20 minutes |
+| 17 | LU4 | [PR Campaign Audit Exercise](activity-17-pr-campaign-audit-exercise.md) | Case Study | 25 minutes |

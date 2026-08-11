@@ -38,3 +38,11 @@ Apply these when generating or refining a course/training deck (python-pptx).
 - Reuse helper functions (`content`, `two_col`, `cards3`, `website_slide`, `gallery_slide`, `img_slide`, `big_statement`, `section`, `step_slide`) so spacing/fonts stay uniform.
 
 Implementation lives in the **tertiary-course-slides** skill (`make_slides.py`).
+
+## Soft-skills courses (branding, communication, leadership, service, ...)
+
+For a knowledge/soft-skills course (not a hands-on tool course), also load
+**tertiary-softskills-ppt-design** — it replaces step-by-step activity slides with a
+case-study/role-play pattern and adds a richer diagram library (pyramids, icon-grid
+cards, pros/cons arrows, journey loops, hex models, quadrant matrices, and sparing
+dark "impact" quote/playbook slides) on top of the base rules here.

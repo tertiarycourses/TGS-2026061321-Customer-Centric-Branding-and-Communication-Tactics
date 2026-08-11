@@ -7,7 +7,7 @@
 
 **A 2-day WSQ workshop course on building customer-centric brand identity and communication tactics — stakeholder mapping, active listening, branding-in-marketing execution, and measuring PR/branding effectiveness.**
 
-[📖 Lab Activities](labs/README.md) · [🐛 Report an Issue](https://github.com/tertiarycourses/TGS-2026061321-Customer-Centric-Branding-and-Communication-Tactics/issues)
+[📖 Activities](activities/README.md) · [🐛 Report an Issue](https://github.com/tertiarycourses/TGS-2026061321-Customer-Centric-Branding-and-Communication-Tactics/issues)
 
 </div>
 
@@ -30,7 +30,7 @@ The course is organised into 4 Learning Units (LU1–LU4), each with in-class ac
 | **LU3 — Branding in Marketing** | Branding basics, role in marketing, awareness campaigns, PR execution | 9–12 |
 | **LU4 — Branding Effectiveness** | Reputation metrics, success indicators, PR tactics, KPI monitoring | 13–17 |
 
-📖 **Full activity instructions:** see [`labs/README.md`](labs/README.md) for all 17 in-class activities, and [`labs/tools.md`](labs/tools.md) for the frameworks used. Slides, the Learner Guide and the Lesson Plan are in [`courseware/`](courseware/).
+📖 **Full activity instructions:** see [`activities/README.md`](activities/README.md) for all 17 in-class activities, and [`activities/tools.md`](activities/tools.md) for the frameworks used. Slides, the Learner Guide and the Lesson Plan are in [`courseware/`](courseware/).
 
 ---
 
@@ -49,23 +49,23 @@ Full timing detail: [`courseware/LP-Customer-Centric Branding and Communication 
 TGS-2026061321-Customer-Centric-Branding-and-Communication-Tactics/
 ├── README.md
 │
-├── labs/                                          # 17 in-class activity sheets (Markdown)
+├── activities/                                     # 17 in-class activity sheets (Markdown)
 │   ├── README.md                                  # Activity index by Learning Unit
 │   ├── tools.md                                   # Frameworks used (stakeholder matrix, AMEC, SMART KPIs, ...)
-│   └── lab-01-...md … lab-17-...md
+│   └── activity-01-...md … activity-17-...md
 │
 ├── assessment/                                     # WA (Written Assessment) + CS (Case Study), DOCX only
-│   ├── WA (SAQ) - ... - v1.docx / Answer to WA ...
-│   └── CS Assessment - ... - v1.docx / Answer to CS Assessment ...
+│   ├── WA (SAQ) - ... - v2.docx / Answer to WA ...
+│   └── CS Assessment - ... - v2.docx / Answer to CS Assessment ...
 │
 └── courseware/                                     # Slide deck, Lesson Plan, Learner Guide
-    ├── Customer-Centric Branding and Communication Tactics-v1.pptx   # 2-day slide deck (+ PDF)
+    ├── Customer-Centric Branding and Communication Tactics-v7.pptx   # 2-day slide deck (+ PDF)
     ├── LP-Customer-Centric Branding and Communication Tactics.docx   # Lesson Plan (+ PDF)
     ├── LG-Customer-Centric Branding and Communication Tactics.docx   # Learner Guide (+ PDF)
     └── build/                                       # Generators (single source of truth)
         ├── course_data.py                           # Metadata, learning outcomes, topics
         ├── data_domain1.py … data_domain4.py         # Per-LU activity data
-        ├── build_slides.py / build_lesson_plan.py / build_learner_guide.py / build_assessment.py / build_labs.py
+        ├── build_slides.py / build_lesson_plan.py / build_learner_guide.py / build_assessment.py / build_activities.py
         └── prodoc.py / inject_toc.py / render_pdfs.py
 ```
 

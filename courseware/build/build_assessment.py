@@ -4,7 +4,8 @@ Customer-Centric Branding and Communication Tactics, as four DOCX files:
 question papers + model-answer/marking guides. WSQ house cover page (via
 prodoc, no version-control record) — no multiple choice, every item
 open-ended. WA tests knowledge from the slides/concepts; CS is one coherent
-scenario whose model answers are the in-class activity build steps.
+scenario whose model answers are drawn from the in-class activities' build
+deliverable and discussion prompts.
 """
 import os, sys
 from docx import Document
@@ -20,7 +21,7 @@ import prodoc
 REPO=os.path.dirname(os.path.dirname(HERE)); ASSETS=os.path.join(REPO,"courseware","assets")
 OUT=os.path.join(REPO,"assessment")
 
-Q_VER = A_VER = "v1"
+Q_VER = A_VER = "v2"
 
 DARK=RGBColor(0x16,0x1B,0x26); BRAND=RGBColor(0x1F,0x6F,0xEB); GREY=RGBColor(0x55,0x5B,0x66)
 
@@ -185,16 +186,16 @@ def _acts(nums): return [a for a in ACT if a["num"] in nums]
 CS_A=[
     ("Question 1","A1","Activities 1–4 — Stakeholder Influence Mapping, Audience Mapping Workshop, "
      "Brand Attribute Mapping, Digital Reputation Audit Exercise",
-     [s for a in _acts([1,2,3,4]) for s in ([f"{a['title']}: {a['build']}."]+[st[0] for st in a['steps']])]),
+     [s for a in _acts([1,2,3,4]) for s in ([f"{a['title']}: {a['build']}."]+a['discussion_prompts'])]),
     ("Question 2","A2","Activities 5–8 — Brand Perception Audit, Brand Advocacy Assessment, "
      "Campaign Documentation Audit, Customer Perspective Analysis",
-     [s for a in _acts([5,6,7,8]) for s in ([f"{a['title']}: {a['build']}."]+[st[0] for st in a['steps']])]),
+     [s for a in _acts([5,6,7,8]) for s in ([f"{a['title']}: {a['build']}."]+a['discussion_prompts'])]),
     ("Question 3","A3","Activities 9–12 — Brand Audit Workshop, Brand-Marketing Audit Exercise, "
      "Brand Activation Planning Workshop, PR Campaign Budget Planning",
-     [s for a in _acts([9,10,11,12]) for s in ([f"{a['title']}: {a['build']}."]+[st[0] for st in a['steps']])]),
+     [s for a in _acts([9,10,11,12]) for s in ([f"{a['title']}: {a['build']}."]+a['discussion_prompts'])]),
     ("Question 4","A4","Activities 13–17 — Platform Reputation Audit, Brand Health Assessment, "
      "PR Crisis Response Plan, KPI Dashboard Design, PR Campaign Audit Exercise",
-     [s for a in _acts([13,14,15,16,17]) for s in ([f"{a['title']}: {a['build']}."]+[st[0] for st in a['steps']])]),
+     [s for a in _acts([13,14,15,16,17]) for s in ([f"{a['title']}: {a['build']}."]+a['discussion_prompts'])]),
 ]
 
 def case_study_block(d):
@@ -228,9 +229,9 @@ def build_case_answers():
     line(d,f"Course Code: {C.COURSE_CODE}",size=10,color=GREY,after=12,align=AL.CENTER)
     line(d,"Note to assessor:",bold=True,after=2)
     line(d,"Each task maps to one ability criterion (A1–A4) and to the in-class activities the candidate "
-           "completed — the model answer is drawn from the activity build steps. Award Competent (C) where "
-           "the candidate produces (or correctly describes) a plan that covers the points below; exact "
-           "wording will vary.",after=8)
+           "completed — the model answer is drawn from the discussion points those activities worked through. "
+           "Award Competent (C) where the candidate produces (or correctly describes) a plan that covers the "
+           "points below; exact wording will vary.",after=8)
     case_study_block(d)
     for label,crit,act_ref,points in CS_A:
         line(d,f"{label} ({crit}) — Model Answer",bold=True,size=12,color=BRAND,after=2)

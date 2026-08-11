@@ -20,9 +20,11 @@ build_learner_guide.py (or ./build_courseware.sh).
 TITLE        = "Customer-Centric Branding and Communication Tactics"
 SHORT_TITLE  = "Customer-Centric Branding and Communication Tactics"
 COURSE_CODE  = "TGS-2026061321"
-VERSION      = "v1"          # slide-deck version (part of the .pptx filename)
-DOC_VERSION  = "1.0"         # Lesson Plan / Learner Guide DOCX version (N.N)
-VERSION_DATE = "20 July 2026"
+VERSION      = "v7"          # slide-deck version (part of the .pptx filename)
+LG_VERSION   = "2.0"         # Learner Guide DOCX version (N.N) — text unchanged since 2.0
+LP_VERSION   = "2.4"         # Lesson Plan DOCX version (N.N) — bumped for the v7 slide-deck
+                              # background-theme fix (dark "impact" slides -> white house style)
+VERSION_DATE = "11 August 2026"
 ORG          = "Tertiary Infotech Academy Pte Ltd"
 UEN          = "UEN: 201200696W"
 TRAINER      = "[Trainer Name]"          # placeholder — to be filled in by the assigned trainer
@@ -54,6 +56,8 @@ TOPICS = [
     dict(num=1, code="LU1",
          title="Stakeholders and Organisation",
          subtitle="Internal & External Stakeholders · Audience Types · Brand Design · Reputation Assessment",
+         closer_quote="A brand that hasn't mapped its stakeholders is still being defined by them.",
+         closer_attribution="— Closing thought, LU1: Stakeholders and Organisation",
          concepts=[
             "Internal stakeholders (management, employees) and external stakeholders (customers, partners, "
             "investors, media) each hold a different level of influence over — and interest in — the brand.",
@@ -67,6 +71,8 @@ TOPICS = [
     dict(num=2, code="LU2",
          title="Customer Influence",
          subtitle="Customer Perceptions · Brand Reputation · Campaign Reception · Active Listening",
+         closer_quote="The gap between what you believe about your brand and what customers feel is where reputations are won or lost.",
+         closer_attribution="— Closing thought, LU2: Customer Influence",
          concepts=[
             "Customers form perceptions of a brand, its products and its services from quality, experience "
             "and communication — a gap often exists between what a company believes and what customers "
@@ -81,6 +87,8 @@ TOPICS = [
     dict(num=3, code="LU3",
          title="Branding in Marketing",
          subtitle="Branding Basics · Role in Marketing · Awareness Campaigns · PR Execution",
+         closer_quote="A campaign can raise awareness in a week. A brand earns trust over years — spend the budget like you know the difference.",
+         closer_attribution="— Closing thought, LU3: Branding in Marketing",
          concepts=[
             "Branding basics — visual identity, brand values, brand voice and brand guidelines — give a "
             "business a consistent, recognisable presence.",
@@ -94,6 +102,8 @@ TOPICS = [
     dict(num=4, code="LU4",
          title="Branding Effectiveness",
          subtitle="Reputation Metrics · Success Indicators · PR Tactics · KPI Monitoring · Continuous Improvement",
+         closer_quote="What gets measured against a SMART target gets improved. Everything else just gets opinions.",
+         closer_attribution="— Closing thought, LU4: Branding Effectiveness",
          concepts=[
             "Reputation is measured through social metrics, digital metrics (traffic, mentions) and business "
             "KPIs (NPS, satisfaction) across every platform the organisation touches.",
@@ -105,6 +115,21 @@ TOPICS = [
             "continuous-improvement cycle rather than a one-off campaign.",
          ]),
 ]
+
+# ------------------------------------------------------------------ course-closing playbook (dark accent slide)
+# One pillar per Learning Unit — the single executive takeaway a learner should
+# carry out of the room. Rendered once, near the very end of the deck.
+COURSE_PLAYBOOK = dict(
+    title="The Customer-Centric Branding Playbook",
+    closing="Trust cannot be retrofitted after the relaunch. It has to be engineered into every stakeholder, "
+            "every customer conversation, every campaign and every KPI along the way.",
+    items=[
+        ("01", "Map Before You Message", "Know every stakeholder's real power, interest and concern before you speak to them (LU1)."),
+        ("02", "Listen Before You Assume", "Capture the actual customer perception gap through active listening, not internal belief (LU2)."),
+        ("03", "Brand Before You Campaign", "Anchor every awareness and PR activity to one consistent brand positioning (LU3)."),
+        ("04", "Measure to Improve", "Track reputation against SMART KPIs and treat every gap as the next action (LU4)."),
+    ],
+)
 
 # ------------------------------------------------------------------ 2-day schedule (WSQ house format)
 # Day 1: full teaching day, 9:30am-6:30pm, 1-hour lunch, no assessment.

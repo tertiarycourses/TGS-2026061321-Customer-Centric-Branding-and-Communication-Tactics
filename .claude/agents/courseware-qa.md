@@ -53,7 +53,7 @@ with slide/page numbers and a concrete fix for every failure.
 
 **Cross-artifact alignment**
 - Activities, learning outcomes, assessment format (WA SAQ 1h + PP 1h, open book) and
-  technical facts (models, dimensions, URLs) agree across PPT, LP, LG and the labs/ files.
+  technical facts (models, dimensions, URLs) agree across PPT, LP, LG and the activities/ files.
 
 ## Report format
 

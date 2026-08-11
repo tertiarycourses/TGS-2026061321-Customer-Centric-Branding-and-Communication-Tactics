@@ -1,4 +1,13 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(python -c ' *)",
+      "Bash(cat)",
+      "Bash(python3 /tmp/render_pages7.py)",
+      "Bash(python3 -c ' *)",
+      "Bash(python -c \"import json; d=json.load\\(open\\('courseware/build/slide_map.json',encoding='utf-8'\\)\\); print\\(type\\(d\\)\\); print\\(len\\(d\\) if isinstance\\(d,list\\) else list\\(d.keys\\(\\)\\)[:20]\\)\")"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {

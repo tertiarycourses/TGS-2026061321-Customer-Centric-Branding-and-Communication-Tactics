@@ -1,0 +1,10 @@
+slide count 190
+3: SSG DIGITAL ATTENDANCE | Digital Attendance (Mandatory) | 1 | Mandatory — AM, PM and Assessment digital attendance for WSQ-funded courses. | ▶ | 2 | The trainer/administrator displays the digital attendance QR code from the SSG portal. | ▶
+12: BEFORE YOU BEGIN | Briefing for Assessment | No Phones | No Recording | No Discussion | ✓ | Pen Only | No Correction Tape
+13: FINAL ASSESSMENT | Assessment | ✓ | Written Assessment (WA) | Case Study (CS) | Format | Eligibility & Appeals | Customer-Centric Branding and Communication Tactics  ·  TGS-2026061321
+14: ON ASSESSMENT DAY | Assessment Flow | 1 | TRAQOM survey — scan the QR code on the LMS | ▶ | 2 | Assessment digital attendance — scan the SSG QR | ▶
+186: LEARNING OUTCOMES | What You Achieved | 1 | Stakeholders & Organisation | 2 | Customer Influence | 3 | Branding in Marketing
+187: WRAP-UP | Assessment | ✓ | Written Assessment (WA) | Case Study (CS) | Open Book | Submit | Customer-Centric Branding and Communication Tactics  ·  TGS-2026061321
+188: ON ASSESSMENT DAY | Assessment Flow | 1 | TRAQOM survey — scan the QR code on the LMS | ▶ | 2 | Assessment digital attendance — scan the SSG QR | ▶
+189: SSG DIGITAL ATTENDANCE | Digital Attendance (Mandatory) | 1 | Mandatory — AM, PM and Assessment digital attendance for WSQ-funded courses. | ▶ | 2 | The trainer/administrator displays the digital attendance QR code from the SSG portal. | ▶
+190: SEE YOU AT THE NEXT ONE | Thank You! | You are now equipped to build customer-centric brand communication that earns trust and drives results. | Customer-Centric Branding and Communication Tactics  ·  TGS-2026061321 | © 2026 Tertiary Infotech Academy Pte Ltd | 190
