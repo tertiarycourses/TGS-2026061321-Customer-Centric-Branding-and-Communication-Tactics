@@ -2,7 +2,7 @@
 
 # Customer-Centric Branding and Communication Tactics
 
-[![Course](https://img.shields.io/badge/WSQ_Course-TGS--2026061321-1f6feb?style=for-the-badge)](https://www.tertiarycourses.com.sg)
+[![Course](https://img.shields.io/badge/WSQ_Course-TGS--2026061321-1f6feb?style=for-the-badge)](https://www.tertiarycourses.com.sg/wsq-customer-centric-branding-and-communication-tactics.html)
 [![License](https://img.shields.io/badge/License-Educational-fbbf24?style=for-the-badge)](#license)
 
 **A 2-day WSQ workshop course on building customer-centric brand identity and communication tactics — stakeholder mapping, active listening, branding-in-marketing execution, and measuring PR/branding effectiveness.**
@@ -59,13 +59,16 @@ TGS-2026061321-Customer-Centric-Branding-and-Communication-Tactics/
 │   └── CS Assessment - ... - v2.docx / Answer to CS Assessment ...
 │
 └── courseware/                                     # Slide deck, Lesson Plan, Learner Guide
-    ├── Customer-Centric Branding and Communication Tactics-v7.pptx   # 2-day slide deck (+ PDF)
+    ├── Customer-Centric Branding and Communication Tactics-v8.pptx   # 2-day slide deck (+ PDF)
     ├── LP-Customer-Centric Branding and Communication Tactics.docx   # Lesson Plan (+ PDF)
     ├── LG-Customer-Centric Branding and Communication Tactics.docx   # Learner Guide (+ PDF)
+    ├── assets/                                      # Logos + imported brand-trust visuals used by the deck
     └── build/                                       # Generators (single source of truth)
         ├── course_data.py                           # Metadata, learning outcomes, topics
         ├── data_domain1.py … data_domain4.py         # Per-LU activity data
+        ├── data_brandtrust.py                        # Concept-enrichment insight slides (per LU)
         ├── build_slides.py / build_lesson_plan.py / build_learner_guide.py / build_assessment.py / build_activities.py
+        ├── slide_map.json                            # Deck page anchors cited by the Lesson Plan
         └── prodoc.py / inject_toc.py / render_pdfs.py
 ```
 

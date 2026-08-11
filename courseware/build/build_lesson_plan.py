@@ -43,12 +43,12 @@ SCHEDULE = {
     ("9:30","9:50",20,"admin","Welcome, course introduction, ground rules, Skills Framework overview and mandatory digital attendance (AM)",[]),
     ("9:50","11:30",100,"topic",f"LU1 — Stakeholders and Organisation: concepts, then {act_title(1)} & {act_title(2)}",["topic1_section","activity1","activity2"]),
     ("11:30","11:40",10,"break","Tea break",[]),
-    ("11:40","12:30",50,"activity",f"{act_title(3)} & {act_title(4)}; LU1 recap",["activity3","activity4"]),
-    ("12:30","1:30",60,"lunch","Lunch break",[]),
-    ("1:30","3:10",100,"topic",f"LU2 — Customer Influence: concepts, then {act_title(5)} & {act_title(6)}",["topic2_section","activity5","activity6"]),
-    ("3:10","3:20",10,"break","Tea break",[]),
-    ("3:20","4:40",80,"activity",f"{act_title(7)} & {act_title(8)}; LU2 recap",["activity7","activity8"]),
-    ("4:40","6:20",100,"topic",f"LU3 — Branding in Marketing (begins): concepts, then {act_title(9)} & {act_title(10)}",["topic3_section","activity9","activity10"]),
+    ("11:40","1:00",80,"activity",f"{act_title(3)} & {act_title(4)}; LU1 recap",["activity3","activity4"]),
+    ("1:00","2:00",60,"lunch","Lunch break",[]),
+    ("2:00","3:40",100,"topic",f"LU2 — Customer Influence: concepts, then {act_title(5)} & {act_title(6)}",["topic2_section","activity5","activity6"]),
+    ("3:40","3:50",10,"break","Tea break",[]),
+    ("3:50","5:10",80,"activity",f"{act_title(7)} & {act_title(8)}; LU2 recap",["activity7","activity8"]),
+    ("5:10","6:20",70,"topic",f"LU3 — Branding in Marketing (begins): concepts, then {act_title(9)} & {act_title(10)}",["topic3_section","activity9","activity10"]),
     ("6:20","6:30",10,"recap","Day 1 recap, Q&A and PM digital attendance",[]),
  ]),
  2: (C.DAY_THEMES[2], [
@@ -94,11 +94,18 @@ prodoc.add_version_control(doc,[
      "How it Works / Compare / Supporting Data), all case-study examples, and all activity slides "
      "(scenario, roles, discussion, reflection) are unchanged. Page-number citations below refreshed "
      "to match; no change to schedule or activity content.",C.ORG),
-    (C.LP_VERSION,C.VERSION_DATE,
+    ("2.4","7 August 2026",
      "Courseware deck regenerated as v7: replaced the five dark-navy full-bleed 'impact' slides "
      "(the four LU closing-thought quotes and the course wrap-up playbook) and all 17 K/A sub-topic "
      "divider slides with the deck's standard white-background house design, for full visual "
      "consistency across the deck. Slide count, content and schedule unchanged.",C.ORG),
+    (C.LP_VERSION,C.VERSION_DATE,
+     "Courseware deck regenerated as v8: full design refresh to a plainer, flatter house style "
+     "(chevron flow chips, comparison tables, stat bands, bordered callouts) replacing the native "
+     "diagram library and AI-rendered infographics; added concept-enrichment insight slides per "
+     "Learning Unit. All 17 activities keep their case-study/role-play scenario, roles, discussion "
+     "and reflection slides unchanged. Page-number citations below refreshed to match; no change "
+     "to schedule or activity content.",C.ORG),
 ])
 prodoc.add_toc(doc)
 
