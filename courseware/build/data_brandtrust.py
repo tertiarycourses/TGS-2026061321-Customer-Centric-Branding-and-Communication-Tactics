@@ -69,23 +69,11 @@ BRAND_TRUST = {
 
 # ---------------------------------------------------------------- LU2
 2: [
-    ("table", dict(
+    ("image", dict(
         title="The Marketing Funnel vs the Customer Journey",
         kicker="LU2 · TWO MENTAL MODELS",
-        intro="The funnel explains where customers drop off; the journey explains why.",
-        colheads=("Marketing Funnel — business-centric", "Customer Journey — customer-centric"),
-        rows=[
-            ("Shape", "Linear, top-down: Awareness → Interest → Consideration → "
-             "Intent → Evaluation → Purchase",
-             "An infinite loop: Discovery → Research → Purchase → Experience → "
-             "Retention → Advocacy"),
-            ("Progression", "Ends at conversion — the sale is the finish line",
-             "Non-linear, interconnected moments that continue after purchase"),
-            ("What it tracks", "Drop-offs and acquisition costs",
-             "Retention, advocacy, satisfaction and long-term value"),
-            ("Blind spot", "Explains where customers drop off, not why",
-             "Requires richer behavioural data to map honestly"),
-        ])),
+        path="brandtrust/bt-funnel-vs-journey.png",
+        intro="The funnel explains where customers drop off; the journey explains why.")),
     ("image", dict(
         title="Mapping the 5-Stage Journey Loop",
         kicker="LU2 · THE JOURNEY LOOP",

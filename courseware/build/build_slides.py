@@ -300,13 +300,16 @@ def trainer_slide(kicker,name,role,rows,initials,accent=BLUE):
             [[(label.upper(),11,col,True)],vruns],anchor=MSO_ANCHOR.MIDDLE,space=3)
     footer(s); return s
 
-def sub_divider(kicker,title):
-    """Full-bleed light divider for a K/A sub-topic (T1, T2, ...) within a Learning Unit."""
-    s=slide(); rect(s,0,0,SW,SH,WHITE)
-    rect(s,0,0,SW,Inches(0.14),TEAL); rect(s,0,Inches(7.36),SW,Inches(0.14),TEAL)
-    size=32 if len(title)<=50 else (25 if len(title)<=80 else 21)
-    txt(s,Inches(1.0),Inches(2.7),Inches(11.3),Inches(2.2),[[(title,size,INK,True)]],anchor=MSO_ANCHOR.MIDDLE)
-    txt(s,Inches(1.0),Inches(2.15),Inches(11.3),Inches(0.5),[[(kicker,15,TEAL,True)]])
+def sub_divider(kicker,title,n=""):
+    """Full-bleed light divider for a K/A sub-topic (T1, T2, ...) within a
+    Learning Unit — mirrors section()'s layout (ghost watermark, coloured
+    left bar) in teal so it reads as one level below the LU section divider."""
+    s=slide(); rect(s,0,0,SW,SH,WHITE); rect(s,0,0,Inches(0.28),SH,TEAL)
+    rect(s,Inches(0.85),Inches(2.5),Inches(0.14),Inches(2.0),BLUE)
+    txt(s,Inches(1.25),Inches(2.55),Inches(11),Inches(0.6),[[(kicker,16,TEAL,True)]])
+    size=34 if len(title)<=50 else (26 if len(title)<=80 else 21)
+    txt(s,Inches(1.25),Inches(3.0),Inches(11.4),Inches(1.6),[[(title,size,INK,True)]])
+    if n: txt(s,Inches(10.0),Inches(0.7),Inches(2.8),Inches(1.6),[[(n,72,RGBColor(0xE2,0xE8,0xF0),True)]],align=PP_ALIGN.RIGHT)
     footer(s); return s
 
 # --------- case-study / role-play activity pattern (never step-by-step) ---------
@@ -601,7 +604,7 @@ for t in C.TOPICS:
     acts=TOPIC_ACTS[t["num"]]
     for ti,a in enumerate(acts,1):
         t_tag=f"LO{t['num']} · {t['code']} · T{ti}"
-        sub_divider(t_tag, a["t_statement"])
+        sub_divider(t_tag, a["t_statement"], f"T{ti}")
         render_what_is(a,t_tag)
         render_process(a,t_tag)
         render_compare(a,t_tag)
