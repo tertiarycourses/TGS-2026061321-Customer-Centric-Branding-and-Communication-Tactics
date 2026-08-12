@@ -20,6 +20,7 @@ HERE=os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0,HERE)
 import course_data as C
 from data_domain1 import DOMAIN1; from data_domain2 import DOMAIN2
 from data_domain3 import DOMAIN3; from data_domain4 import DOMAIN4
+from data_activity_steps import STEPS
 ACT=DOMAIN1+DOMAIN2+DOMAIN3+DOMAIN4
 import prodoc
 REPO=os.path.dirname(os.path.dirname(HERE)); ASSETS=os.path.join(REPO,"courseware","assets")
@@ -34,10 +35,17 @@ prodoc.add_cover_page(doc,"LEARNER GUIDE",C.TITLE,C.LG_VERSION,
                       course_logo=None, course_code=C.COURSE_CODE)
 prodoc.add_version_control(doc,[
     ("1.0","20 July 2026","First version.",C.ORG),
-    (C.LG_VERSION,"4 August 2026",
+    ("2.0","4 August 2026",
      "Converted in-class activities to case-study/role-play format (scenario, roles, discussion "
      "prompts, reflection points) with a richer supporting-visual set; content realigned to a "
      "single continuous Nimbus Wellness scenario matching the Case Study assessment.",C.ORG),
+    (C.LG_VERSION,C.VERSION_DATE,
+     "Added a detailed step-by-step facilitation guide to every one of the 17 activities — the "
+     "ordered steps, a suggested timing breakdown, the target artefact and a pre-debrief "
+     "self-check. The slide deck deliberately carries no step-by-step instructions, so this "
+     "guide is now the learner's working document during each activity. Each activity is also "
+     "published as a standalone artefact pack (Facilitator Guide, Learner Worksheet and "
+     "Checklist, in DOCX and PDF) under activities/.",C.ORG),
 ])
 prodoc.add_toc(doc)
 
@@ -53,10 +61,15 @@ doc.add_paragraph(
 doc.add_paragraph(
     "Use this guide alongside the course slides during class, and again during the open-book "
     "assessment. Each Learning Unit section below lists the key concepts, followed by every "
-    "activity you will complete in class as a case study or role play — its scenario, discussion "
-    "and decision prompts, and a debrief check — rather than a numbered instruction list. This is "
-    "a workshop-based course rather than a software course, so activities are illustrated with "
-    "worked templates and examples on the slides rather than software screenshots.")
+    "activity you will complete in class as a case study or role play. For each activity you get "
+    "the full scenario, the roles to assign, a detailed step-by-step guide to running it, a "
+    "suggested timing breakdown, the artefact you will produce, a self-check list, the discussion "
+    "and decision prompts, and a debrief check.")
+doc.add_paragraph(
+    "The slides deliberately do not carry the step-by-step instructions — your trainer facilitates "
+    "the scenario, roles and discussion from the deck while you work through the detailed steps "
+    "here. This is a workshop-based course rather than a software course, so activities are "
+    "illustrated with worked templates and examples rather than software screenshots.")
 doc.add_paragraph("Before you start, you will need:")
 for b in ["A notebook or digital document to capture your activity work.",
           "Internet access to research live brand examples where an activity calls for one.",
@@ -94,6 +107,34 @@ for t in C.TOPICS:
                 r=p.add_run(f"{name} — "); r.bold=True
                 r2=p.add_run(f"Goal: {goal}. "); r2.italic=True
                 p.add_run(brief)
+        sp=STEPS.get(a["num"])
+        if sp:
+            h3("How to run it — step by step")
+            doc.add_paragraph(
+                "These are the detailed steps for this activity. Work through them in order; "
+                "your trainer will facilitate from the slides while you work from this guide.")
+            for i,(heading,instruction) in enumerate(sp["steps"],1):
+                p=doc.add_paragraph(style="List Number")
+                r=p.add_run(f"{heading} — "); r.bold=True
+                p.add_run(instruction)
+            h3("Suggested timing")
+            ttbl=doc.add_table(rows=0,cols=2); ttbl.style="Table Grid"
+            thdr=ttbl.add_row().cells
+            for i,htext in enumerate(["Minutes","Phase"]):
+                thdr[i].text=""; r=thdr[i].paragraphs[0].add_run(htext)
+                r.bold=True; r.font.size=Pt(9.5); r.font.color.rgb=RGBColor(0xFF,0xFF,0xFF)
+                prodoc._shade_cell(thdr[i],"1F6FEB")
+            for mins,phase in sp["timing"]:
+                c=ttbl.add_row().cells
+                c[0].text=""; c[0].paragraphs[0].add_run(f"{mins} min").font.size=Pt(9.5)
+                c[1].text=""; c[1].paragraphs[0].add_run(phase).font.size=Pt(9.5)
+            doc.add_paragraph("")
+            h3("Your artefact")
+            doc.add_paragraph(sp["artefact"])
+            h3("Before you debrief — self-check")
+            for item in sp["checklist"]:
+                p=doc.add_paragraph(style="List Bullet"); p.add_run(item)
+
         h3("Discussion & Decision Prompts")
         doc.add_paragraph("Work through these together — there is no single correct order to follow:")
         for prompt in a["discussion_prompts"]:

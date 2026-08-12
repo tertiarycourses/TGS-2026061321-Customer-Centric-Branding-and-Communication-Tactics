@@ -69,17 +69,19 @@ BRAND_TRUST = {
 
 # ---------------------------------------------------------------- LU2
 2: [
-    ("image", dict(
+    ("funnel_journey", dict(
         title="The Marketing Funnel vs the Customer Journey",
         kicker="LU2 · TWO MENTAL MODELS",
-        path="brandtrust/bt-funnel-vs-journey.png",
-        intro="The funnel explains where customers drop off; the journey explains why.")),
-    ("image", dict(
+        intro="The funnel explains where customers drop off; the journey explains why.",
+        note="The funnel ends at the sale. The journey treats the sale as the "
+             "halfway point.")),
+    ("journey_loop", dict(
         title="Mapping the 5-Stage Journey Loop",
         kicker="LU2 · THE JOURNEY LOOP",
-        path="brandtrust/bt-journey-loop.png",
         intro="Awareness → Consideration → Decision → Retention → Advocacy — and "
-              "advocacy feeds awareness again.")),
+              "advocacy feeds awareness again.",
+        note="Every stage is a listening post: what you hear there tells you what "
+             "to fix at the stage before it.")),
     ("stats", dict(
         title="The Engine of Loyalty: Emotional Branding",
         kicker="LU2 · EMOTION DRIVES PERCEPTION",
@@ -167,10 +169,9 @@ BRAND_TRUST = {
             "Revocation — how quickly can authority be severed if boundaries are breached?",
         ],
         note="Enterprise Authority Assurance replaces the editorial calendar.")),
-    ("image", dict(
+    ("architecture", dict(
         title="The Architecture of Modern Brand Trust",
         kicker="LU4 · PUTTING IT TOGETHER",
-        path="brandtrust/bt-architecture.png",
         intro="The customer at the centre — anchored by emotion, navigated through "
               "journey mapping, scaled safely within strict AI authority boundaries.")),
     ("playbook", dict(
@@ -193,5 +194,159 @@ BRAND_TRUST = {
              "your brand."),
         ],
         tagline="Trust cannot be retrofitted. It must be engineered.")),
+],
+}
+
+# ---------------------------------------------------------------------------
+# COMMUNICATION TACTICS enrichment
+#
+# The course title promises "Communication Tactics" as much as branding, so
+# these slides give the communication half the same evidence base as the brand
+# half. Sourced and synthesised from the industry references supplied by the
+# course owner: Atlassian/Loom, Zendesk, HelpDesk, Freshworks, Bitrix24, Slack,
+# Pedowitz Group, ChiefCXOfficer and LinkedIn's customer-experience series.
+#
+# Rendered by build_slides.py through the same render_insight() dispatcher, so
+# these use the native chart / scorecard / process_map components — no imported
+# raster art.
+# ---------------------------------------------------------------------------
+
+COMMS = {
+
+# ---------------------------------------------------------------- LU1
+1: [
+    ("chart", dict(
+        title="What Customers Now Expect From Communication",
+        kicker="LU1 · THE EXPECTATION GAP",
+        chart="bar",
+        intro="Communication is no longer the wrapper around the product — for most "
+              "customers it IS the product experience.",
+        categories=["Say how a company communicates matters\nas much as what it sells",
+                    "Expect immediate response\nwhen they make contact",
+                    "Would switch after multiple\npoor experiences",
+                    "Expect to be treated as an individual,\nnot a number"],
+        series=[("% of consumers",[88,77,73,73])],
+        legend=False,
+        number_format='0"%"',
+        note="If 88% judge you on how you communicate, communication quality is a "
+             "brand attribute — not an admin overhead.",
+        source="Source: HelpDesk, Slack and Zendesk customer-communication research, 2024–25")),
+],
+
+# ---------------------------------------------------------------- LU2
+2: [
+    ("pillars", dict(
+        title="The 5 C's of Customer Communication",
+        kicker="LU2 · A MESSAGE QUALITY TEST",
+        intro="Run any customer message through these five tests before it is sent.",
+        items=[
+            ("Clear","Could the reader act on it without asking a follow-up question? "
+                     "Plain language beats precise jargon every time."),
+            ("Concise","Is every word doing work? Length is not thoroughness — it is "
+                       "usually an unedited first draft."),
+            ("Concrete","Are there specifics — a date, a number, a name — rather than "
+                        "generalities the reader has to interpret?"),
+            ("Correct","Is it accurate, current and error-free? One wrong detail "
+                       "undermines the credibility of everything around it."),
+        ])),
+    ("process_map", dict(
+        title="Active Listening — The 3 P's in a Live Conversation",
+        kicker="LU2 · WHAT GOOD LISTENING LOOKS LIKE",
+        intro="Active listening is a sequence you can observe and coach, not a personality trait.",
+        lanes=[
+            ("Presence",["Remove distractions","Let the customer finish","Note the emotion, not just the facts",""]),
+            ("Patience",["Allow silence to sit","Resist solving too early","Ask one clarifying question",""]),
+            ("Paraphrasing",["Reflect the meaning back","Check: 'have I got that right?'","Confirm before resolving","Close the loop"]),
+        ],
+        note="Courteous is the fifth C — and the one most often lost when a team is under "
+             "time pressure.",
+        source="Source: Zendesk, Freshworks and Bitrix24 active-listening guidance")),
+    ("table", dict(
+        title="Language That Builds Trust vs Language That Breaks It",
+        kicker="LU2 · SAY THIS, NOT THAT",
+        intro="The same fact, framed two ways, produces two different customer relationships.",
+        colheads=("Avoid — closes the conversation","Use — keeps it open"),
+        rows=[
+            ("Deflecting","“That's not something I deal with.”",
+             "“Let me find that out for you and come back by 3pm.”"),
+            ("Leading with the limit","“The dress isn't in stock for two weeks.”",
+             "“You can have the dress in two weeks — I can order it now.”"),
+            ("Dismissing the feeling","“There's nothing wrong with the product.”",
+             "“I can see why that was frustrating — let me look into it.”"),
+            ("Vague commitment","“We'll look into it and revert.”",
+             "“I'll update you by Thursday, even if it isn't resolved yet.”"),
+        ])),
+],
+
+# ---------------------------------------------------------------- LU3
+3: [
+    ("chart", dict(
+        title="Why Channel Choice Is a Brand Decision",
+        kicker="LU3 · OMNICHANNEL PAYS",
+        chart="column",
+        intro="Meeting customers on the channels they already use measurably outperforms "
+              "broadcasting on the channel that is easiest to produce.",
+        categories=["Higher order rate using\n3+ channels vs one",
+                    "Spend more when issues resolve\non their preferred channel",
+                    "Buy more with seamless\nconversational experiences",
+                    "Favour brands that respond\non social media"],
+        series=[("% uplift / share of consumers",[494,64,70,54])],
+        legend=False,
+        note="A 3+ channel mix produced a 494% higher order rate than single-channel "
+             "campaigns — the single largest effect in the research set.",
+        source="Source: Zendesk and Freshworks omnichannel research, 2024–25")),
+    ("process_map", dict(
+        title="The Customer Communication Management Workflow",
+        kicker="LU3 · FROM MESSAGE TO IMPROVEMENT",
+        intro="A repeatable five-stage cycle — the operational backbone behind a consistent brand voice.",
+        lanes=[
+            ("Brand team",["Create\nbranded templates","Personalise\nwith customer data","","",""]),
+            ("Service team",["","","Deliver on the\npreferred channel","Track in one\ncentral record",""]),
+            ("Insight team",["","","","","Optimise from\nperformance data"]),
+        ],
+        note="The loop only closes if tracking is centralised — scattered records are why "
+             "most teams cannot say whether their communication improved.",
+        source="Source: HelpDesk customer-communication management framework")),
+],
+
+# ---------------------------------------------------------------- LU4
+4: [
+    ("scorecard", dict(
+        title="The Communication Metrics That Matter",
+        kicker="LU4 · WHAT TO PUT ON THE DASHBOARD",
+        intro="Four service-communication measures the Board can actually govern by.",
+        cards=[
+            dict(value="FRT", label="First Response Time — how long before a customer hears "
+                                    "anything at all", target="< 4 hours", trend="leading",
+                 direction="up"),
+            dict(value="ART", label="Average Resolution Time — how long to actually close "
+                                    "the issue", target="< 48 hours", trend="lagging",
+                 direction="flat"),
+            dict(value="CSAT", label="Customer Satisfaction — how the interaction felt to "
+                                     "the customer", target="≥ 85%", trend="lagging",
+                 direction="up"),
+            dict(value="FCR", label="First Contact Resolution — solved without the customer "
+                                    "chasing again", target="≥ 75%", trend="leading",
+                 direction="up"),
+        ],
+        note="FRT and FCR are leading indicators — they warn you early. CSAT and ART confirm "
+             "afterwards. A dashboard of only lagging metrics cannot be steered by.",
+        source="Source: Zendesk, Bitrix24 and Freshworks service-metric guidance")),
+    ("flow", dict(
+        title="Structuring a Message So It Lands",
+        kicker="LU4 · THE SCR STRUCTURE",
+        intro="Lead with the conclusion, not the build-up — the discipline behind every "
+              "clear executive update.",
+        color="VIOLET",
+        steps=[
+            ("Situation","State the shared context both sides already agree on. Keep it to "
+                         "one or two sentences."),
+            ("Complication","Name what changed or what is at risk. This is the reason the "
+                            "message exists at all."),
+            ("Resolution","State the recommendation or decision needed — and exactly what "
+                          "you want the reader to do next."),
+        ],
+        note="Minto's principle: give the answer first, then the supporting detail. Readers "
+             "who need convincing read on; readers who trust you can stop after line one.")),
 ],
 }

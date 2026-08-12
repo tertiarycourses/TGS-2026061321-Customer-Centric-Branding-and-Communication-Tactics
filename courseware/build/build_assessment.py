@@ -21,7 +21,7 @@ import prodoc
 REPO=os.path.dirname(os.path.dirname(HERE)); ASSETS=os.path.join(REPO,"courseware","assets")
 OUT=os.path.join(REPO,"assessment")
 
-Q_VER = A_VER = "v2"
+Q_VER = A_VER = "v3"
 
 DARK=RGBColor(0x16,0x1B,0x26); BRAND=RGBColor(0x1F,0x6F,0xEB); GREY=RGBColor(0x55,0x5B,0x66)
 
@@ -44,25 +44,75 @@ def runs(d,segments,after=6,style=None):
 def bullet(d,text): return runs(d,[(text,False)],after=3,style="List Bullet")
 def numbered(d,text): return runs(d,[(text,False)],after=3,style="List Number")
 
-def candidate_block(d,minutes,instructions):
-    line(d,"A: Trainee Information",bold=True,size=12,after=4)
-    line(d,"Trainee Name (as per NRIC): _______________________________",after=4)
-    line(d,"Last 3 digits and alphabet of NRIC / FIN: _________________",after=4)
-    line(d,"Date: __________________",after=10)
-    line(d,"B: Instructions to Candidate",bold=True,size=12,after=4)
-    for t in instructions: line(d,t,after=3)
-    line(d,"",after=4)
+def _shade(cell,hexfill):
+    from docx.oxml.ns import qn
+    from docx.oxml import OxmlElement
+    tcPr=cell._tc.get_or_add_tcPr()
+    shd=OxmlElement("w:shd"); shd.set(qn("w:val"),"clear")
+    shd.set(qn("w:color"),"auto"); shd.set(qn("w:fill"),hexfill)
+    tcPr.append(shd)
 
-def official_use(d):
-    line(d,"____________________________________________________________________________",color=GREY,after=6)
-    line(d,"For Official Use Only",bold=True,after=4)
-    line(d,"Grade: _____ (C / NYC)",after=4)
-    line(d,"Assessor Name: _______________\t\tAssessor NRIC: _____________",after=4)
-    line(d,"Date: ________________________\t\tSignature: _________________",after=4)
+def _hyperlink(paragraph,url,text):
+    """A real clickable hyperlink (python-docx has no API for this)."""
+    from docx.oxml.ns import qn
+    from docx.oxml import OxmlElement
+    part=paragraph.part
+    r_id=part.relate_to(url,
+        "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink",
+        is_external=True)
+    hl=OxmlElement("w:hyperlink"); hl.set(qn("r:id"),r_id)
+    new_run=OxmlElement("w:r"); rPr=OxmlElement("w:rPr")
+    col=OxmlElement("w:color"); col.set(qn("w:val"),"1F6FEB"); rPr.append(col)
+    u=OxmlElement("w:u"); u.set(qn("w:val"),"single"); rPr.append(u)
+    new_run.append(rPr)
+    t=OxmlElement("w:t"); t.text=text; new_run.append(t)
+    hl.append(new_run); paragraph._p.append(hl)
+
+def candidate_block(d,minutes,instructions):
+    """Page 2 of every question paper: Trainee Information, Instructions to
+    Candidate (with the clickable LMS link) and the Grading block — and nothing
+    else. The scenario/questions then start on page 3."""
+    line(d,"A: Trainee Information",bold=True,size=12,after=4)
+    t=d.add_table(rows=3,cols=2); t.style="Table Grid"
+    for i,lbl in enumerate(("Trainee Name (as per NRIC)",
+                            "Last 3 digits and alphabet of NRIC / FIN","Date")):
+        c=t.rows[i].cells[0]; c.text=""
+        r=c.paragraphs[0].add_run(lbl); r.bold=True; r.font.size=Pt(10)
+        _shade(c,"F5F8FC")
+        t.rows[i].cells[1].text=""
+    line(d,"",after=8)
+
+    line(d,"B: Instructions to Candidate",bold=True,size=12,after=4)
+    for t_ in instructions: line(d,t_,after=3)
+    p=d.add_paragraph(); p.paragraph_format.space_after=Pt(3)
+    r=p.add_run("Submission: upload your completed answers to the LMS at ")
+    r.font.size=Pt(11); r.font.name="Arial"
+    _hyperlink(p,"https://lms-tms.tertiaryinfotech.com/","https://lms-tms.tertiaryinfotech.com/")
+    line(d,"",after=8)
+
+    line(d,"C: Grading",bold=True,size=12,after=4)
+    g=d.add_table(rows=3,cols=4); g.style="Table Grid"
+    cells=[("Grade","(C / NYC)"),("Assessor Name",""),
+           ("Assessor NRIC",""),("Date",""),("Signature",""),("",""),]
+    labels=[("Grade (C / NYC)",""),("Assessor Name",""),("Assessor NRIC",""),
+            ("Date",""),("Signature",""),("","")]
+    for i,(lbl,_v) in enumerate(labels):
+        row=g.rows[i//2]; c=row.cells[(i%2)*2]
+        c.text=""
+        if lbl:
+            r=c.paragraphs[0].add_run(lbl); r.bold=True; r.font.size=Pt(10)
+            _shade(c,"F5F8FC")
+        row.cells[(i%2)*2+1].text=""
+    d.add_page_break()
 
 def answer_lines(d,n=3):
+    """A bordered answer box sized by the number of lines expected."""
     line(d,"Answer:",bold=True,color=GREY,after=2)
-    for _ in range(n): line(d,"_______________________________________________________________",color=GREY,after=4)
+    t=d.add_table(rows=1,cols=1); t.style="Table Grid"
+    cell=t.rows[0].cells[0]; cell.text=""
+    for _ in range(max(1,n)):
+        p=cell.add_paragraph(); p.paragraph_format.space_after=Pt(10)
+    line(d,"",after=8)
 
 def cover(d,kind):
     prodoc.add_cover_page(d,kind,C.TITLE,Q_VER.lstrip("v"),
@@ -75,7 +125,7 @@ _Q_STEMS=[
     "Distinguish between internal and external stakeholders of a brand, and explain why their level of "
     "influence over the brand can differ.",
     "Name the different types of external audience a brand must communicate with, and explain why each "
-    "needs its own communication approach.",
+    "needs its own communication approach and channel.",
     "When drafting a branding design or idea, why is it important to highlight the product or service's "
     "attributes and benefits rather than just its features?",
     "Describe how you would assess an organisation's reputation on social media and other platforms, and "
@@ -86,8 +136,8 @@ _Q_STEMS=[
     "than a paid campaign.",
     "Why is it important to document customer reception and the outcome of a branding campaign, rather "
     "than relying on general impressions?",
-    "Describe the key elements of active listening, and explain how they help reveal a customer's true "
-    "perspective of an organisation.",
+    "Describe the three elements of active listening (Presence, Patience, Paraphrasing), and explain how "
+    "they help reveal a customer's true perspective of an organisation.",
     "List the basic elements that make up a brand's identity, and explain why consistency across these "
     "elements matters.",
     "Explain the role that branding plays within the marketing mix, and how it differs from a single "
@@ -102,38 +152,55 @@ _Q_STEMS=[
     "Explain how monitoring a brand against SMART KPIs turns branding into a continuous-improvement "
     "process.",
 ]
+# Each question carries its own K code, printed on the paper AND repeated in the
+# key, so every K1..K16 is visibly covered by the WA.
 WRITTEN=[]
 _qi=0
 for t in C.TOPICS:
     for c in t["concepts"]:
-        WRITTEN.append((_Q_STEMS[_qi], 3, f"{t['code']} — {t['title']}", [c]))
+        WRITTEN.append((_Q_STEMS[_qi], 3, f"{t['code']} — {t['title']}", [c], f"K{_qi+1}"))
         _qi+=1
 
+def check_coverage():
+    """Fail the build if any K or A is orphaned."""
+    k_expected={f"K{i}" for i in range(1,len(WRITTEN)+1)}
+    k_used={code for *_,code in WRITTEN}
+    a_expected={f"A{i}" for i in range(1,len(CS_Q)+1)}
+    a_used={code for _,code,_ in CS_Q}
+    problems=[]
+    if k_expected-k_used: problems.append(f"WA missing {sorted(k_expected-k_used)}")
+    if a_expected-a_used: problems.append(f"CS missing {sorted(a_expected-a_used)}")
+    print("  K coverage:", ", ".join(f"{c}->Q{i}" for i,(*_,c) in enumerate(WRITTEN,1)))
+    print("  A coverage:", ", ".join(f"{c}->{lbl}" for lbl,c,_ in CS_Q))
+    if problems:
+        raise SystemExit("COVERAGE FAILURE: "+"; ".join(problems))
+    return True
+
 def build_written_paper():
-    d=new_doc(); cover(d,"WRITTEN ASSESSMENT (WA)")
-    line(d,"Written Assessment (WA) — Knowledge",bold=True,size=15,color=BRAND,after=2,align=AL.CENTER)
-    line(d,f"Course Code: {C.COURSE_CODE}",size=10,color=GREY,after=12,align=AL.CENTER)
+    d=new_doc(); cover(d,"WRITTEN ASSESSMENT (SAQ)")
     candidate_block(d,60,[
         "1. This is an individual, open-book assessment of underpinning knowledge.",
         "2. A total of 1 hour is given to complete this Written Assessment.",
-        "3. Answer all questions in your own words in the space provided.",
+        f"3. There are {len(WRITTEN)} questions. Answer ALL questions in your own words in the space provided.",
         "4. All questions are based on the concepts taught in LU1–LU4.",
+        "5. You need to answer all questions correctly to be assessed as Competent.",
     ])
-    line(d,"C. Answer all questions.",bold=True,size=12,after=6)
-    for i,(q,nlines,_,_) in enumerate(WRITTEN,1):
-        runs(d,[(f"Q{i}. ",True),(q,False)],after=2)
+    line(d,"Written Assessment (SAQ) — Knowledge",bold=True,size=15,color=BRAND,after=2,align=AL.CENTER)
+    line(d,f"Course Code: {C.COURSE_CODE}",size=10,color=GREY,after=12,align=AL.CENTER)
+    line(d,"D: Answer all questions.",bold=True,size=12,after=6)
+    for i,(q,nlines,_,_,code) in enumerate(WRITTEN,1):
+        runs(d,[(f"Q{i}. ",True),(q,False),(f"  ({code})",True)],after=2)
         answer_lines(d,nlines)
-    official_use(d)
     out=os.path.join(OUT,f"WA (SAQ) - {C.TITLE} - {Q_VER}.docx"); d.save(out); return out
 
 def build_written_answers():
-    d=new_doc(); cover(d,"ANSWER KEY — WRITTEN ASSESSMENT (WA)")
-    line(d,"Written Assessment (WA) — Answer Key & Marking Guide",bold=True,size=15,color=BRAND,after=2,align=AL.CENTER)
+    d=new_doc(); cover(d,"ANSWER KEY — WRITTEN ASSESSMENT (SAQ)")
+    line(d,"Written Assessment (SAQ) — Answer Key & Marking Guide",bold=True,size=15,color=BRAND,after=2,align=AL.CENTER)
     line(d,f"Course Code: {C.COURSE_CODE}",size=10,color=GREY,after=12,align=AL.CENTER)
     line(d,"Mark each answer against the model points below — award the mark where the candidate covers "
            "the key ideas; wording will vary. All items are taught in LU1–LU4 (source shown in brackets).",after=8)
-    for i,(q,_,src,points) in enumerate(WRITTEN,1):
-        runs(d,[(f"Q{i}. ",True),(q,False),(f"   [{src}]",False)],after=2)
+    for i,(q,_,src,points,code) in enumerate(WRITTEN,1):
+        runs(d,[(f"Q{i}. ",True),(q,False),(f"  ({code})",True),(f"   [{src}]",False)],after=2)
         line(d,"Suggestive answers (not exhaustive):",bold=True,color=GREY,after=2)
         for p in points: bullet(d,p)
         line(d,"",after=4)
@@ -199,28 +266,27 @@ CS_A=[
 ]
 
 def case_study_block(d):
-    line(d,"C. Case Study",bold=True,size=12,after=4)
+    line(d,"D: Case Study",bold=True,size=12,after=4)
     line(d,"Scenario:",bold=True,after=2)
     line(d,SCENARIO,after=4)
     for pt in SCENARIO_POINTS: bullet(d,pt)
     line(d,SCENARIO_TAIL,after=8)
 
 def build_case_paper():
-    d=new_doc(); cover(d,"CASE STUDY (CS) ASSESSMENT")
-    line(d,"Case Study (CS) Assessment — Practical",bold=True,size=15,color=BRAND,after=2,align=AL.CENTER)
-    line(d,f"Course Code: {C.COURSE_CODE}",size=10,color=GREY,after=12,align=AL.CENTER)
+    d=new_doc(); cover(d,"CASE STUDY (CS)")
     candidate_block(d,60,[
         "1. This is an individual, open-book practical assessment.",
         "2. A total of 1 hour is given to complete this Case Study assessment.",
-        "3. Base every answer on the Nimbus Wellness case study below.",
+        f"3. There are {len(CS_Q)} tasks. Answer ALL tasks, based on the Nimbus Wellness case study.",
         "4. Write your answer as you would present it to Nimbus's leadership team.",
-        "5. All four tasks reuse the techniques you practised in the in-class activities.",
+        "5. All tasks reuse the techniques you practised in the in-class activities.",
     ])
+    line(d,"Case Study (CS) — Practical",bold=True,size=15,color=BRAND,after=2,align=AL.CENTER)
+    line(d,f"Course Code: {C.COURSE_CODE}",size=10,color=GREY,after=12,align=AL.CENTER)
     case_study_block(d)
     for label,crit,body in CS_Q:
         runs(d,[(f"{label} ({crit}): ",True),(body,False)],after=4)
         answer_lines(d,6)
-    official_use(d)
     out=os.path.join(OUT,f"CS Assessment - {C.TITLE} - {Q_VER}.docx"); d.save(out); return out
 
 def build_case_answers():
@@ -243,5 +309,7 @@ def build_case_answers():
 
 if __name__=="__main__":
     os.makedirs(OUT,exist_ok=True)
+    print("K/A coverage check:")
+    check_coverage()
     for fn in (build_written_paper,build_written_answers,build_case_paper,build_case_answers):
         print("Wrote",fn())

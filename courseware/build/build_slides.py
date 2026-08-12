@@ -20,6 +20,9 @@ from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
+from pptx.chart.data import CategoryChartData
+from pptx.enum.chart import XL_CHART_TYPE, XL_LEGEND_POSITION
+import motion
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -28,7 +31,7 @@ from data_domain1 import DOMAIN1
 from data_domain2 import DOMAIN2
 from data_domain3 import DOMAIN3
 from data_domain4 import DOMAIN4
-from data_brandtrust import BRAND_TRUST
+from data_brandtrust import BRAND_TRUST, COMMS
 ACT = DOMAIN1 + DOMAIN2 + DOMAIN3 + DOMAIN4
 
 REPO = os.path.dirname(os.path.dirname(HERE))
@@ -92,8 +95,10 @@ def head(s,title,kicker=None,kcolor=BLUE):
 def _logo(name):
     p=os.path.join(ASSETS,name)
     return p if os.path.exists(p) else None
-def _source_line(s,text):
-    if text: txt(s,Inches(0.85),Inches(6.85),Inches(11.6),Inches(0.3),[[(text,10,GREY,False)]])
+def _source_line(s,text,y=6.85):
+    """Attribution line. `y` is lifted by callers whose slide also carries a
+    callout band at the foot, so the two never overlap."""
+    if text: txt(s,Inches(0.85),Inches(y),Inches(11.6),Inches(0.3),[[(text,10,GREY,False)]])
 
 # ---------------- slide templates (shared plain component library) ----------------
 def cover():
@@ -241,6 +246,311 @@ def img_slide(title,path,kicker=None,intro=None):
         ih=Inches(4.55); iw=int(ih*1376/768)
         s.shapes.add_picture(p,int((SW-iw)/2),Inches(2.3),height=ih)
     footer(s); return s
+
+# ---------------- native vector diagrams (replace imported raster art) --------
+# These three replace the dark AI-rendered PNGs that clashed with the all-white
+# house theme. Drawn with the same rect/oval/txt primitives as every other
+# slide, so they stay on-palette, stay crisp at any zoom, and stay editable.
+
+def funnel_vs_journey(title,kicker=None,intro=None,note=None):
+    """Side-by-side: the linear marketing funnel vs the looping customer journey."""
+    s=head(slide(),title,kicker)
+    if intro: lead(s,intro)
+    Y0=Inches(2.35); PANH=Inches(3.75); PW=Inches(5.68); gap=Inches(0.27)
+    LX=Inches(0.85); RX=int(LX+PW+gap)
+
+    # ---- left panel: the funnel (business-centric)
+    rect(s,LX,Y0,PW,PANH,LIGHT); rect(s,LX,Y0,PW,Inches(0.1),BLUE)
+    txt(s,LX,int(Y0+Inches(0.22)),PW,Inches(0.34),
+        [[("THE MARKETING FUNNEL",13,BLUE,True)]],align=PP_ALIGN.CENTER)
+    txt(s,LX,int(Y0+Inches(0.58)),PW,Inches(0.3),
+        [[("Business-centric  ·  linear  ·  ends at the sale",10.5,GREY,False)]],align=PP_ALIGN.CENTER)
+    stages=["AWARENESS","INTEREST","CONSIDERATION","INTENT","PURCHASE"]
+    top=int(Y0+Inches(1.0)); bh=Inches(0.4); bgap=Inches(0.07)
+    wide=Inches(4.5); narrow=Inches(1.9)
+    for i,st in enumerate(stages):
+        frac=i/(len(stages)-1)
+        w=int(wide-(wide-narrow)*frac)
+        x=int(LX+PW/2-w/2); y=int(top+(bh+bgap)*i)
+        # tint deepens toward the point of the funnel
+        col=BLUE if i==len(stages)-1 else RGBColor(0x8A,0xB4,0xF0)
+        rect(s,x,y,w,bh,col)
+        txt(s,x,y,w,bh,[[(st,10.5,WHITE,True)]],align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE)
+    txt(s,LX+Inches(0.3),int(Y0+PANH-Inches(0.5)),PW-Inches(0.6),Inches(0.42),
+        [[("Tracks drop-off and acquisition cost.",10.5,INK,False)]],align=PP_ALIGN.CENTER)
+
+    # ---- right panel: the journey loop (customer-centric)
+    rect(s,RX,Y0,PW,PANH,LIGHT); rect(s,RX,Y0,PW,Inches(0.1),TEAL)
+    txt(s,RX,int(Y0+Inches(0.22)),PW,Inches(0.34),
+        [[("THE CUSTOMER JOURNEY",13,TEAL,True)]],align=PP_ALIGN.CENTER)
+    txt(s,RX,int(Y0+Inches(0.58)),PW,Inches(0.3),
+        [[("Customer-centric  ·  non-linear  ·  loops into advocacy",10.5,GREY,False)]],align=PP_ALIGN.CENTER)
+    # ring of stage chips — a loop, drawn as an ellipse of nodes
+    ring=["DISCOVERY","RESEARCH","PURCHASE","EXPERIENCE","RETENTION","ADVOCACY"]
+    cx=int(RX+PW/2); cy=int(Y0+Inches(2.05))
+    rx=Inches(2.02); ry=Inches(0.9)
+    cw_=Inches(1.42); ch_=Inches(0.42)
+    for i,st in enumerate(ring):
+        ang=-math.pi/2+2*math.pi*i/len(ring)
+        x=int(cx+rx*math.cos(ang)-cw_/2); y=int(cy+ry*math.sin(ang)-ch_/2)
+        col=TEAL if st in ("ADVOCACY","DISCOVERY") else RGBColor(0x5A,0xCf,0xA8)
+        rect(s,x,y,cw_,ch_,col)
+        txt(s,x,y,cw_,ch_,[[(st,9,WHITE,True)]],align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE)
+    # centre hub makes the loop legible as a cycle
+    hub=Inches(0.98)
+    oval(s,int(cx-hub/2),int(cy-hub/2),hub,hub,WHITE)
+    txt(s,int(cx-hub/2),int(cy-hub/2),hub,hub,
+        [[("↻",20,TEAL,True)],[("loops",8.5,GREY,False)]],align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE,space=0)
+    txt(s,RX+Inches(0.3),int(Y0+PANH-Inches(0.5)),PW-Inches(0.6),Inches(0.42),
+        [[("Advocacy feeds the next customer's discovery.",10.5,INK,False)]],align=PP_ALIGN.CENTER)
+
+    callout(s,note or "The funnel explains where customers drop off. The journey explains why.",
+            y=6.35,h=0.62,color=VIOLET,size=13)
+    footer(s); return s
+
+
+def journey_loop(title,kicker=None,intro=None,stages=None,note=None):
+    """The 5-stage journey as a horizontal chevron that visibly returns to the start."""
+    s=head(slide(),title,kicker)
+    if intro: lead(s,intro)
+    stages=stages or [
+        ("Awareness","The customer first encounters the brand."),
+        ("Consideration","They compare it against alternatives."),
+        ("Decision","They buy — the funnel would stop here."),
+        ("Retention","The experience decides whether they stay."),
+        ("Advocacy","They tell others, feeding new awareness."),
+    ]
+    n=len(stages); X0=Inches(0.85); TOTW=Inches(11.63); gap=Inches(0.26)
+    cw=int((TOTW-gap*(n-1))/n); y=Inches(2.55); ch=Inches(2.65); bd=Inches(0.66)
+    for i,(h_,b_) in enumerate(stages):
+        x=int(X0+(cw+gap)*i); col=PALETTE[i%len(PALETTE)]
+        rect(s,x,y,cw,ch,LIGHT); rect(s,x,y,cw,Inches(0.1),col)
+        oval(s,int(x+cw/2-bd/2),int(y+Inches(0.32)),bd,bd,col)
+        txt(s,int(x+cw/2-bd/2),int(y+Inches(0.32)),bd,bd,
+            [[(str(i+1),21,WHITE,True)]],align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE)
+        txt(s,x+Inches(0.12),int(y+Inches(1.12)),cw-Inches(0.24),Inches(0.38),
+            [[(h_,12.5,INK,True)]],align=PP_ALIGN.CENTER)
+        txt(s,x+Inches(0.12),int(y+Inches(1.52)),cw-Inches(0.24),int(ch-Inches(1.64)),
+            [[(b_,10,GREY,False)]],align=PP_ALIGN.CENTER)
+        if i<n-1:
+            txt(s,int(x+cw-Inches(0.02)),int(y+ch/2-Inches(0.3)),int(gap+Inches(0.04)),Inches(0.6),
+                [[("▶",14,PALETTE[i%len(PALETTE)],True)]],align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE)
+    # the return arc — what makes it a loop rather than a funnel
+    arcy=int(y+ch+Inches(0.18))
+    rect(s,X0,arcy,TOTW,Inches(0.06),TEAL)
+    rect(s,X0,arcy,Inches(0.06),Inches(0.3),TEAL)
+    rect(s,int(X0+TOTW-Inches(0.06)),arcy,Inches(0.06),Inches(0.3),TEAL)
+    txt(s,X0,int(arcy+Inches(0.12)),TOTW,Inches(0.42),
+        [[("◀  advocacy feeds awareness — the journey loops, it does not end",11.5,TEAL,True)]],
+        align=PP_ALIGN.CENTER)
+    if note: callout(s,note,y=6.42,h=0.58,color=BLUE,size=12.5)
+    footer(s); return s
+
+
+def trust_architecture(title,kicker=None,intro=None,layers=None,note=None):
+    """Concentric model: the customer at the centre, ringed by the three
+    layers that build modern brand trust."""
+    s=head(slide(),title,kicker)
+    if intro: lead(s,intro)
+    layers=layers or [
+        ("Emotional Authenticity","Values, storytelling, transparency",VIOLET),
+        ("The Customer Journey Loop","Awareness through to advocacy",TEAL),
+        ("AI Brand Authority","Identity, access, governance",BLUE),
+    ]
+    cx=int(SW/2); cy=Inches(4.32)
+    # rings drawn largest-first so inner rings paint on top
+    sizes=[Inches(3.95),Inches(3.0),Inches(2.05)]
+    for (lbl,desc,col),d in zip(reversed(layers),sizes):
+        oval(s,int(cx-d/2),int(cy-d/2),d,d,col)
+    core=Inches(1.24)
+    oval(s,int(cx-core/2),int(cy-core/2),core,core,WHITE)
+    txt(s,int(cx-core/2),int(cy-core/2),core,core,
+        [[("THE",9,GREY,True)],[("CUSTOMER",11,INK,True)]],
+        align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE,space=0)
+
+    # legend cards to the left and right — keeps labels off the rings
+    lw=Inches(3.55); lh=Inches(1.16)
+    spots=[(Inches(0.85),Inches(2.62)),(Inches(0.85),Inches(5.12)),
+           (int(SW-Inches(0.85)-lw),Inches(3.87))]
+    for (lbl,desc,col),(lx,ly) in zip(layers,spots):
+        rect(s,lx,ly,lw,lh,LIGHT); rect(s,lx,ly,Inches(0.09),lh,col)
+        txt(s,lx+Inches(0.26),int(ly+Inches(0.16)),lw-Inches(0.42),Inches(0.42),
+            [[(lbl,13,col,True)]])
+        txt(s,lx+Inches(0.26),int(ly+Inches(0.58)),lw-Inches(0.42),Inches(0.5),
+            [[(desc,10.5,GREY,False)]])
+    callout(s,note or "A self-sustaining ecosystem: the customer at the centre, anchored by "
+                      "emotion, navigated by journey mapping, scaled within AI authority boundaries.",
+            y=6.42,h=0.6,color=AMBER,size=12)
+    footer(s); return s
+# ---------------- native PPT charts, scorecards and process maps -------------
+# Real chart parts (editable in PowerPoint: right-click > Edit Data), plus a
+# KPI scorecard and a swimlane process map. All on the house palette.
+
+def _style_chart(chart,legend=True,font=10):
+    """House styling for a native chart part."""
+    chart.has_title=False
+    chart.font.size=Pt(font); chart.font.name="Arial"; chart.font.color.rgb=GREY
+    if legend:
+        chart.has_legend=True; chart.legend.position=XL_LEGEND_POSITION.BOTTOM
+        chart.legend.include_in_layout=False
+        chart.legend.font.size=Pt(font); chart.legend.font.color.rgb=INK
+    else:
+        chart.has_legend=False
+    return chart
+
+def chart_slide(title,kind,categories,series,kicker=None,intro=None,note=None,
+                source=None,legend=True,colors=None,number_format=None):
+    """A native PowerPoint chart under the house header.
+
+    kind       -- "bar" | "column" | "pie" | "doughnut" | "line"
+    categories -- list of category labels
+    series     -- list of (name, [values]) tuples
+    """
+    s=head(slide(),title,kicker)
+    if intro: lead(s,intro)
+    cd=CategoryChartData(); cd.categories=categories
+    for nm,vals in series: cd.add_series(nm,vals)
+    ctype={"bar":XL_CHART_TYPE.BAR_CLUSTERED,
+           "column":XL_CHART_TYPE.COLUMN_CLUSTERED,
+           "pie":XL_CHART_TYPE.PIE,
+           "doughnut":XL_CHART_TYPE.DOUGHNUT,
+           "line":XL_CHART_TYPE.LINE_MARKERS}[kind]
+    y=Inches(2.3); h=Inches(4.1) if (note or source) else Inches(4.45)
+    gf=s.shapes.add_chart(ctype,Inches(1.4),y,Inches(10.5),h,cd)
+    ch=gf.chart; _style_chart(ch,legend=legend)
+
+    pal=colors or PALETTE
+    if kind in ("pie","doughnut"):
+        pts=ch.plots[0]
+        pts.has_data_labels=True
+        dl=pts.data_labels; dl.number_format='0"%"'; dl.number_format_is_linked=False
+        dl.font.size=Pt(11); dl.font.bold=True; dl.font.color.rgb=WHITE
+        for i,pt in enumerate(ch.series[0].points):
+            pt.format.fill.solid(); pt.format.fill.fore_color.rgb=pal[i%len(pal)]
+            pt.format.line.color.rgb=WHITE; pt.format.line.width=Pt(1.5)
+    else:
+        for i,sr in enumerate(ch.series):
+            sr.format.fill.solid(); sr.format.fill.fore_color.rgb=pal[i%len(pal)]
+            sr.format.line.fill.background()
+        if len(series)==1:
+            ch.plots[0].has_data_labels=True
+            dl=ch.plots[0].data_labels
+            dl.font.size=Pt(10); dl.font.bold=True; dl.font.color.rgb=INK
+            if number_format:
+                dl.number_format=number_format; dl.number_format_is_linked=False
+        try:
+            ch.value_axis.has_major_gridlines=True
+            ch.value_axis.format.line.color.rgb=LINE
+            ch.category_axis.format.line.color.rgb=LINE
+        except Exception:
+            pass
+    if note:
+        callout(s,note,y=6.42,h=0.6,color=AMBER,size=12)
+        _source_line(s,source,y=6.03)
+    else:
+        _source_line(s,source)
+    footer(s); return s
+
+def scorecard(title,cards,kicker=None,intro=None,note=None,source=None,cols=None):
+    """KPI scorecard: metric tiles with value, label, target and trend chip.
+
+    cards -- list of dicts: {value, label, target (optional), trend (optional),
+             direction: "up"|"down"|"flat"}
+    """
+    s=head(slide(),title,kicker)
+    if intro: lead(s,intro)
+    n=len(cards); cols=cols or (len(cards) if len(cards)<=4 else 3)
+    rows=math.ceil(n/cols)
+    X0=Inches(0.85); TOTW=Inches(11.63); gx=Inches(0.28); gy=Inches(0.26)
+    Y0=Inches(2.42); AREAH=Inches(3.5) if (note and source) else (
+                             Inches(3.85) if (note or source) else Inches(4.2))
+    cw=int((TOTW-gx*(cols-1))/cols); ch=int((AREAH-gy*(rows-1))/rows)
+    ARROW={"up":"▲","down":"▼","flat":"■"}
+    for i,c in enumerate(cards):
+        r=i//cols; cc=i%cols
+        x=int(X0+(cw+gx)*cc); y=int(Y0+(ch+gy)*r); col=PALETTE[i%len(PALETTE)]
+        rect(s,x,y,cw,ch,LIGHT); rect(s,x,y,cw,Inches(0.1),col)
+        val=str(c["value"]); vs=40 if len(val)<=5 else 30
+        txt(s,x,int(y+Inches(0.3)),cw,Inches(1.0),[[(val,vs,col,True)]],align=PP_ALIGN.CENTER)
+        txt(s,x+Inches(0.16),int(y+Inches(1.32)),cw-Inches(0.32),Inches(0.78),
+            [[(c["label"],12,INK,False)]],align=PP_ALIGN.CENTER)
+        by=int(y+ch-Inches(0.62))
+        if c.get("target"):
+            rect(s,x+Inches(0.16),by,cw-Inches(0.32),Inches(0.44),WHITE)
+            trend=c.get("trend"); d=c.get("direction","flat")
+            # A leading indicator warns early; a lagging one only confirms. Colour
+            # by that meaning rather than by the arrow, so the chip cannot imply
+            # "good/bad" where none is meant.
+            if trend=="leading":   tcol,mark=BLUE,"◆"
+            elif trend=="lagging": tcol,mark=GREY,"○"
+            else:                  tcol,mark=((TEAL if d=="up" else
+                                               RGBColor(0xD9,0x3A,0x3A) if d=="down" else GREY),
+                                              ARROW[d])
+            line=[("Target: ",9.5,GREY,False),(str(c["target"]),9.5,INK,True)]
+            if trend: line+=[("   "+mark+" ",9.5,tcol,True),(str(trend),9.5,tcol,True)]
+            txt(s,x+Inches(0.16),by,cw-Inches(0.32),Inches(0.44),[line],
+                align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE)
+    if note:
+        callout(s,note,y=6.45,h=0.58,color=BLUE,size=12)
+        _source_line(s,source,y=6.06)
+    else:
+        _source_line(s,source)
+    footer(s); return s
+
+def process_map(title,lanes,kicker=None,intro=None,note=None,source=None):
+    """Swimlane process map: each lane is an actor, each step a chip in sequence.
+
+    lanes -- list of (lane_name, [step, ...]); steps align to columns so the
+             hand-offs between actors read left to right.
+    """
+    s=head(slide(),title,kicker)
+    if intro: lead(s,intro)
+    ncol=max(len(st) for _,st in lanes)
+    X0=Inches(0.85); LANEW=Inches(2.05); TOTW=Inches(11.63)
+    stepw=int((TOTW-LANEW-Inches(0.2)*(ncol-1))/ncol); gx=Inches(0.2)
+    Y0=Inches(2.4); AREAH=Inches(3.85) if (note or source) else Inches(4.2)
+    lh=int((AREAH-Inches(0.14)*(len(lanes)-1))/len(lanes)); gy=Inches(0.14)
+    # index the occupied cells first so hand-offs between lanes can be drawn
+    occupied={}   # column -> (lane index, colour)
+    for li,(lane,steps) in enumerate(lanes):
+        for si,st in enumerate(steps):
+            if st: occupied[si]=(li,PALETTE[li%len(PALETTE)])
+
+    def cell_x(si): return int(X0+LANEW+Inches(0.2)+(stepw+gx)*si)
+    def lane_y(li): return int(Y0+(lh+gy)*li)
+
+    for li,(lane,steps) in enumerate(lanes):
+        y=lane_y(li); col=PALETTE[li%len(PALETTE)]
+        rect(s,X0,y,LANEW,lh,col)
+        txt(s,X0+Inches(0.14),y,LANEW-Inches(0.28),lh,[[(lane,12,WHITE,True)]],
+            anchor=MSO_ANCHOR.MIDDLE)
+        for si,st in enumerate(steps):
+            if not st: continue
+            x=cell_x(si)
+            rect(s,x,y,stepw,lh,LIGHT,line=LINE); rect(s,x,y,Inches(0.07),lh,col)
+            txt(s,x+Inches(0.18),y,stepw-Inches(0.3),lh,[[(st,10.5,INK,False)]],
+                anchor=MSO_ANCHOR.MIDDLE)
+
+    # connectors: same lane -> a chevron in the gap; lane change -> an elbow that
+    # makes the hand-off between actors explicit rather than implied by a blank.
+    cols=sorted(occupied)
+    for a_,b_ in zip(cols,cols[1:]):
+        la,ca=occupied[a_]; lb,_=occupied[b_]
+        ya,yb=lane_y(la),lane_y(lb)
+        xa_end=cell_x(a_)+stepw; xb=cell_x(b_)
+        if la==lb and b_==a_+1:
+            txt(s,xa_end,int(ya+lh/2-Inches(0.16)),gx,Inches(0.32),
+                [[("▶",11,ca,True)]],align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE)
+        else:
+            mid=int(xa_end+gx/2)
+            rect(s,mid,int(ya+lh/2),Inches(0.035),int(yb+lh/2-(ya+lh/2)),ca)
+            rect(s,mid,int(yb+lh/2),int(xb-mid),Inches(0.035),ca)
+            txt(s,int(xb-Inches(0.24)),int(yb+lh/2-Inches(0.16)),Inches(0.24),Inches(0.32),
+                [[("▶",11,ca,True)]],align=PP_ALIGN.CENTER,anchor=MSO_ANCHOR.MIDDLE)
+    if note: callout(s,note,y=6.45,h=0.58,color=TEAL,size=12)
+    _source_line(s,source)
+    footer(s); return s
+
 def playbook(title,items,kicker=None,tagline=None):
     """Numbered 01..0n columns with big faint numerals + tagline band."""
     s=head(slide(),title,kicker)
@@ -409,6 +719,26 @@ def render_insight(kind,spec):
                   intro=spec.get("intro"),note=spec.get("note"))
     elif kind=="image":
         img_slide(spec["title"],spec["path"],kicker=spec.get("kicker"),intro=spec.get("intro"))
+    elif kind=="funnel_journey":
+        funnel_vs_journey(spec["title"],kicker=spec.get("kicker"),
+                          intro=spec.get("intro"),note=spec.get("note"))
+    elif kind=="journey_loop":
+        journey_loop(spec["title"],kicker=spec.get("kicker"),intro=spec.get("intro"),
+                     stages=spec.get("stages"),note=spec.get("note"))
+    elif kind=="architecture":
+        trust_architecture(spec["title"],kicker=spec.get("kicker"),intro=spec.get("intro"),
+                           layers=spec.get("layers"),note=spec.get("note"))
+    elif kind=="chart":
+        chart_slide(spec["title"],spec.get("chart","column"),spec["categories"],spec["series"],
+                    kicker=spec.get("kicker"),intro=spec.get("intro"),note=spec.get("note"),
+                    source=spec.get("source"),legend=spec.get("legend",True),
+                    number_format=spec.get("number_format"))
+    elif kind=="scorecard":
+        scorecard(spec["title"],spec["cards"],kicker=spec.get("kicker"),intro=spec.get("intro"),
+                  note=spec.get("note"),source=spec.get("source"),cols=spec.get("cols"))
+    elif kind=="process_map":
+        process_map(spec["title"],spec["lanes"],kicker=spec.get("kicker"),intro=spec.get("intro"),
+                    note=spec.get("note"),source=spec.get("source"))
     elif kind=="quote":
         big_statement(spec["line1"],spec["line2"],spec["kicker"],color=VIOLET)
     elif kind=="flow":
@@ -601,6 +931,10 @@ for t in C.TOPICS:
               kicker=f"{t['code']} · KEY CONCEPTS", cols=2, size=14)
     for kind,spec in BRAND_TRUST.get(t["num"],[]):
         render_insight(kind,spec)
+    # communication-tactics enrichment (charts, scorecards, process maps) drawn
+    # from the industry references — the deck's "communication" half
+    for kind,spec in COMMS.get(t["num"],[]):
+        render_insight(kind,spec)
     acts=TOPIC_ACTS[t["num"]]
     for ti,a in enumerate(acts,1):
         t_tag=f"LO{t['num']} · {t['code']} · T{ti}"
@@ -662,16 +996,54 @@ SLIDE_MAP["digital_attendance_end"]=PAGE["n"]
 big_statement("Thank You!","You are now equipped to build customer-centric brand communication that earns trust and drives results.",
               "SEE YOU AT THE NEXT ONE",color=TEAL)
 
-# house rule: uniform fade transition on every slide (python-pptx has no API)
-from pptx.oxml.ns import qn
-def add_transitions(prs,kind="fade",speed="med"):
-    for sl in prs.slides:
-        el=sl._element
-        for tr in el.findall(qn("p:transition")): el.remove(tr)
-        tr=el.makeelement(qn("p:transition"),{"spd":speed})
-        tr.append(el.makeelement(qn(f"p:{kind}"),{}))
-        el.append(tr)
-add_transitions(prs)
+# ---------------- motion: transitions + entrance animations ----------------
+# Transitions are chosen by slide ROLE rather than applied uniformly, so the
+# movement carries meaning: a push means "new section", a wipe means "new task",
+# a zoom marks a deliberate beat, and ordinary content slides fade quietly.
+# Roles are inferred from each slide's own content, which keeps this independent
+# of the order the builders above happen to run in.
+
+def _classify(sl, idx, total):
+    """Infer a slide's role for transition selection."""
+    texts=[sh.text_frame.text for sh in sl.shapes if sh.has_text_frame]
+    joined=" ".join(texts)
+    kicker=texts[0] if texts else ""
+    if idx==0: return "cover"
+    if idx>=total-1: return "closing"
+    # section dividers carry a big ghosted LU/T number and a short body
+    if any(t.strip() in (f"LU{n}" for n in range(1,9)) for t in texts): return "section"
+    if any(re.fullmatch(r"T\d+", t.strip()) for t in texts): return "subdivider"
+    if "· ACTIVITY" in joined or "THE SCENARIO" in joined.upper(): return "scenario"
+    if "YOUR ROLES" in joined.upper() or "ROLE CARDS" in joined.upper(): return "roles"
+    if "DISCUSSION" in joined.upper() or "DECISION PROMPTS" in joined.upper(): return "discussion"
+    if "REFLECT" in joined.upper() or "DEBRIEF" in joined.upper(): return "reflection"
+    if "WHY IT MATTERS" in joined.upper() or "SEE YOU AT" in joined.upper(): return "big"
+    if any(k in joined for k in ("Digital Attendance","Assessment Flow","Briefing for Assessment",
+                                 "Ground Rules","Lesson Plan","About the Trainer")): return "admin"
+    return "content"
+
+import re
+_total=len(prs.slides._sldIdLst)
+_roles=[_classify(sl,i,_total) for i,sl in enumerate(prs.slides)]
+_plan=motion.build_plan(_roles)
+_tally=motion.apply_transitions(prs,_plan,speed="fast")
+
+# Entrance animations: on card/tile slides, reveal the cards in reading order so
+# the trainer can talk to each one. Only the body shapes animate — the header,
+# rule and footer are present from the start.
+def _animate_cards(sl, role):
+    if role in ("cover","closing","big","section"): return
+    body=[sh for sh in sl.shapes
+          if sh.has_text_frame and sh.top is not None and sh.top > Inches(2.1)
+          and sh.height is not None and sh.height > Inches(0.5)]
+    body.sort(key=lambda s:(round(s.top/Inches(0.5)), s.left))
+    if 2 <= len(body) <= 8:
+        motion.animate(sl, body, dur=350, stagger=True)
+
+for sl,role in zip(prs.slides,_roles):
+    _animate_cards(sl,role)
+
+print("Transitions:", ", ".join(f"{k}×{v}" for k,v in sorted(_tally.items())))
 
 OUT=os.path.join(REPO,"courseware",f"{C.SHORT_TITLE}-{C.VERSION}.pptx")
 prs.save(OUT)

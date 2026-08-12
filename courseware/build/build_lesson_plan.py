@@ -99,13 +99,24 @@ prodoc.add_version_control(doc,[
      "(the four LU closing-thought quotes and the course wrap-up playbook) and all 17 K/A sub-topic "
      "divider slides with the deck's standard white-background house design, for full visual "
      "consistency across the deck. Slide count, content and schedule unchanged.",C.ORG),
-    (C.LP_VERSION,C.VERSION_DATE,
+    ("2.5","11 August 2026",
      "Courseware deck regenerated as v8: full design refresh to a plainer, flatter house style "
      "(chevron flow chips, comparison tables, stat bands, bordered callouts) replacing the native "
      "diagram library and AI-rendered infographics; added concept-enrichment insight slides per "
      "Learning Unit. All 17 activities keep their case-study/role-play scenario, roles, discussion "
      "and reflection slides unchanged. Page-number citations below refreshed to match; no change "
      "to schedule or activity content.",C.ORG),
+    (C.LP_VERSION,C.VERSION_DATE,
+     "Courseware deck regenerated as v9. The three imported AI-rendered diagrams were replaced "
+     "with native house-style vector diagrams, and native PowerPoint charts, KPI scorecards and "
+     "swimlane process maps were added. New communication-tactics content across all four Learning "
+     "Units (the 5 C's, the 3 P's of active listening, trust-building language, omnichannel "
+     "evidence, the CCM workflow, service metrics and the SCR message structure). Varied, "
+     "role-based slide transitions and staged entrance animations replace the uniform fade. "
+     "Detailed step-by-step facilitation guides for all 17 activities were published to the "
+     "Learner Guide and the per-activity artefact packs; the deck itself carries no step-by-step "
+     "instructions. Page-number citations below refreshed to match; no change to the schedule or "
+     "activity durations.",C.ORG),
 ])
 prodoc.add_toc(doc)
 

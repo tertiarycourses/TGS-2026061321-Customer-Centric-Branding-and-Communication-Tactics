@@ -16,5 +16,14 @@ courseware/build/.infographic_cache/
 # Superseded courseware versions (kept locally only)
 /courseware/archive/
 
+# CONFIDENTIAL — assessment papers and answer keys are trainer-only and are
+# distributed via Google Drive, never GitHub. Do not remove this rule.
+/assessment/
+
+# Internal Drive links + any local secrets (written by gdrive_push.py).
+.env
+.env.*
+!.env.example
+
 # Office lock files
 ~$*

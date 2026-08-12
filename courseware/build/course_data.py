@@ -20,11 +20,12 @@ build_learner_guide.py (or ./build_courseware.sh).
 TITLE        = "Customer-Centric Branding and Communication Tactics"
 SHORT_TITLE  = "Customer-Centric Branding and Communication Tactics"
 COURSE_CODE  = "TGS-2026061321"
-VERSION      = "v8"          # slide-deck version (part of the .pptx filename)
-LG_VERSION   = "2.0"         # Learner Guide DOCX version (N.N) — text unchanged since 2.0
-LP_VERSION   = "2.5"         # Lesson Plan DOCX version (N.N) — bumped for the v8 slide-deck
-                              # redesign (plain house style; slide-number citations refreshed)
-VERSION_DATE = "11 August 2026"
+VERSION      = "v9"          # slide-deck version (part of the .pptx filename)
+LG_VERSION   = "3.0"         # Learner Guide DOCX version (N.N) — detailed step-by-step
+                              # facilitation guides added for all 17 activities
+LP_VERSION   = "2.6"         # Lesson Plan DOCX version (N.N) — bumped for the v9 slide-deck
+                              # (communication-tactics enrichment; slide citations refreshed)
+VERSION_DATE = "12 August 2026"
 ORG          = "Tertiary Infotech Academy Pte Ltd"
 UEN          = "UEN: 201200696W"
 TRAINER      = "Dr. Alfred Ang"
@@ -41,6 +42,20 @@ VERSION_HISTORY = [
      "rebalanced so Activities 3-4 fit their stated durations; admin slides "
      "converted to card format; funnel-vs-journey slide redrawn as a comparison "
      "table.", ORG),
+    ("2.0", "12 August 2026",
+     "Visual and content upgrade. The three imported AI-rendered diagrams were "
+     "replaced with native house-style vector diagrams (funnel-vs-journey, the "
+     "5-stage journey loop and the brand-trust architecture). Added native "
+     "PowerPoint charts, KPI scorecards and swimlane process maps. New "
+     "communication-tactics content across all four Learning Units (the 5 C's, "
+     "the 3 P's of active listening, trust-building language, omnichannel "
+     "evidence, the CCM workflow, service metrics and the SCR/Minto message "
+     "structure), sourced from industry references. Varied, role-based slide "
+     "transitions and staged entrance animations replace the uniform fade. "
+     "Detailed step-by-step facilitation guides written for all 17 activities "
+     "and published to the Learner Guide and per-activity artefact packs "
+     "(Facilitator Guide, Learner Worksheet, Checklist in DOCX and PDF); the "
+     "slide deck deliberately carries no step-by-step instructions.", ORG),
 ]
 DAYS         = 2
 
